@@ -4,8 +4,6 @@ from sqlalchemy import orm
 
 from .db_session import SqlAlchemyBase
 
-from .genres import Genre
-
 
 class Track(SqlAlchemyBase):
     __tablename__ = 'tracks'
@@ -17,6 +15,8 @@ class Track(SqlAlchemyBase):
     file_path = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     users_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
     likes_count = sqlalchemy.Column(sqlalchemy.Integer, default=0)
+    views_count = sqlalchemy.Column(sqlalchemy.Integer, default=0)
+    intop_count = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now())
 
     collaborations = sqlalchemy.Column(sqlalchemy.String, default='')  # через запятую id пользователей (без пробелаов)
