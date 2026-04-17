@@ -12,7 +12,7 @@ def global_init(db_file: str):
     if not db_file or not db_file.strip():
         raise Exception('No file')
 
-    conn_str = f'sqlite:///{db_file.strip()}?check_same_tread=False'
+    conn_str = f'sqlite:///{db_file.strip()}?check_same_thread=False'
     print('Connecting...')
 
     engine = sa.create_engine(conn_str, echo=False)

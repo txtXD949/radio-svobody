@@ -1,11 +1,12 @@
 import datetime
 import sqlalchemy
 from sqlalchemy import orm
+from sqlalchemy_serializer import SerializerMixin
 
-from data.db_session import SqlAlchemyBase
+from .db_session import SqlAlchemyBase
 
 
-class Dump(SqlAlchemyBase):
+class Dump(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'dump'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, autoincrement=True, primary_key=True)
