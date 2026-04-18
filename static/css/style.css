@@ -1,0 +1,103 @@
+/* Корень */
+:root {
+    --background: #0D0D0D;
+    --surface: #1A1A1A;
+    --border: #2B2B2B;
+    --primary: #484AD5;
+    --primary-hover: #5a5ce0;
+    --text: #FFFFFF;
+    --text-secondary: #A0A0A0;
+}
+
+/* Тело */
+body {
+    background-color: var(--background);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+}
+
+/* Контейнеры */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 80px;
+}
+
+/* Для форм */
+.auth-card {
+    background-color: var(--surface);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 500px;
+    margin: 50px auto;
+    border: 1px solid var(--border);
+}
+
+.auth-card h1 {
+    font-family: 'Courier Prime', sans-serif;
+    font-weight: bold;
+    font-size: 32px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Поля ввода */
+.form-control {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    color: var(--text);
+    width: 100%;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(72, 74, 213, 0.3);
+}
+
+label {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* Кнопочки */
+.btn-primary {
+    background-color: var(--primary);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    color: white;
+    font-weight: 600;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+/* Ссылочки */
+a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Шторка */
+.navbar {
+    background-color: var(--surface) !important;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: var(--text) !important;
+}
