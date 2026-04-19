@@ -1,0 +1,15 @@
+{% extends "base2.html" %}
+
+{% block main %}
+<h1>Топ треков</h1>
+
+{% for track in top_tracks %}
+    <div>{{ track.title }} - <3 {{ track.likes_count }}</div>
+{% endfor %}
+
+<h1>Топ исполнителей</h1>
+{% for user, total_likes in top_artists %}
+    <div>{{ user.username }} - всего лайков: {{ total_likes }}</div>
+{% endfor %}
+
+{% endblock %}

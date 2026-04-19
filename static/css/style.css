@@ -14,6 +14,10 @@ body {
     background-color: var(--background);
     color: var(--text);
     font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 200vh;
+    margin-bottom: 0;
 }
 
 /* Контейнеры */
@@ -91,13 +95,331 @@ a:hover {
 }
 
 /* Шторка */
-.navbar {
+.offcanvas {
     background-color: var(--surface) !important;
-    border-bottom: 1px solid var(--border);
-    padding: 16px 0;
+    color: var(--text);
+    overflow-y: auto;
+    scrollbar-width: none;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
 }
 
-.navbar-brand {
+.offcanvas .btn-close {
+    filter: invert(1);
+}
+
+.offcanvas::-webkit-scrollbar {
+    display: none;
+}
+
+.drawer-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.drawer-nav::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.drawer-link {
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text);
+    text-decoration: none;
+    padding: 16px 20px;
+    border-radius: 12px;
+    transition: background-color 0.2s;
+}
+
+.drawer-link:hover {
+    background-color: var(--background);
+}
+
+.offcanvas-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.offcanvas-title {
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--text);
+}
+
+.offcanvas-body {
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 20px 24px;
+}
+
+.offcanvas-body::-webkit-scrollbar {
+    display: none;
+}
+
+/* Шапка */
+.top-bar {
+    display: flex;
+    align-items: center;
+    gap: 100px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    font-size: 32px;
+    color: white;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.search-input {
+    flex: 1;
+    padding: 12px 20px;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 34px;
+    color: var(--text);
+}
+
+.right-group {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-right: 80px;
+}
+
+.theme-toggle {
+    background: white;
+    border: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+}
+
+.main-content {
+    margin-top: 80px;
+    padding: 20px 80px;
+    flex: 1;
+}
+
+/* Кнопочка для шторки */
+.custom-menu-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.menu-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+}
+
+.menu-icon span {
+    display: block;
+    height: 4px;
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+}
+
+/* Футер */
+.footer {
+    background-color: var(--surface);
+    padding: 40px 80px 100px;
+    margin-top: auto;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.footer-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
+
+.footer-social {
+    display: flex;
+    gap: 20px;
+}
+
+.social-link {
+    display: block;
+    width: 32px;
+    height: 32px;
+    border: 1px solid white;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.social-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Временные заглушки для иконок TODO: потом сделать */
+.social-link.telegram {
+    background-color: transparent;
+}
+
+.social-link.discord {
+    background-color: transparent;
+}
+
+.mini-player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 12px 80px;
+    z-index: 1000;
+}
+
+.player-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* Левая часть */
+.player-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.player-image {
+    width: 48px;
+    height: 48px;
+    background: var(--background);
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.player-track-name {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 34px;
+    border-bottom-right-radius: 34px;
+    padding: 12px 20px;
+    color: var(--text);
+    font-size: 14px;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Плеер */
+/* Центральная часть */
+.player-center {
+    display: flex;
+    gap: 16px;
+}
+
+.player-btn {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 24px;
+    cursor: pointer;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.player-btn:hover {
+    color: var(--primary);
+}
+
+/* Правая часть */
+.player-right {
+    flex-shrink: 0;
+}
+
+.player-fav {
+    background: none;
+    border: 2px solid white;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 24px;
     font-weight: bold;
-    color: var(--text) !important;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.player-fav:hover {
+    background: white;
+    color: var(--surface);
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .mini-player {
+        padding: 12px 20px;
+    }
+
+    .player-track-name {
+        max-width: 150px;
+    }
 }

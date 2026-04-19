@@ -3,11 +3,15 @@ from flask_restful import Api
 from werkzeug.exceptions import HTTPException
 from flask_login import LoginManager, login_user, logout_user, login_required
 
+from sqlalchemy import func
+
 from dotenv import load_dotenv
 import os
 
 from data import db_session
 from data.users import User
+from data.tracks import Track
+from data.api_key import ApiKey
 from resources import (
     TrackResource, TrackListResource, TrackLikeResource,
     UserResource, UserListResource,
@@ -140,6 +144,21 @@ def confirm_token(token):
 @app.route('/confirm_wait')
 def confirm_wait():
     return render_template('confirm_wait.html', title='Подтверждение email')
+
+
+@app.route('/')
+def index():
+    db_sess = db_session.create_session()
+
+    # топ треков
+    top_tracks = db_sess.query(Track).order_by(Track.likes_count.desc()).limit(5).all()
+
+    # топ исполнителей
+    top_artists = top_artists = db_sess.query(User, func.sum(Track.likes_count).label('total_likes')
+                                              ).join(Track, User.id == Track.users_id).group_by(User.id).order_by(
+        func.sum(Track.likes_count).desc()).limit(5).all()
+
+    return render_template('index.html', top_tracks=top_tracks, top_artists=top_artists, title='Radio Svobodi')
 
 
 if __name__ == '__main__':
