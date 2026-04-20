@@ -1,15 +1,125 @@
 {% extends "base2.html" %}
 
 {% block main %}
-<h1>Топ треков</h1>
 
-{% for track in top_tracks %}
-    <div>{{ track.title }} - <3 {{ track.likes_count }}</div>
-{% endfor %}
+<div class="hero-section d-flex flex-column justify-content-center align-items-center" style="min-height: 80vh;">
+    <h1 class="hero-title"
+        style="font-size: 120px; font-weight: 900; text-align: center; color: #0D0D0D; text-shadow: 7px 0 0 #2B2B2B, -7px 0 0 #2B2B2B, 0 7px 0 #2B2B2B, 0 -7px 0 #2B2B2B;">
+        РАДИО СВОБОДЫ</h1>
+    <div class="hero-buttons" style="display: flex; gap: 300px; margin-top: 150px;">
+        <a href="/edit" class="btn btn-primary"
+           style="width: 302px; height: 102px; display: inline-flex; align-items: center; justify-content: center; font-size: 24px;">СОЗДАТЬ</a>
+        <a href="/dump" class="btn btn-primary"
+           style="width: 302px; height: 102px; display: inline-flex; align-items: center; justify-content: center; font-size: 24px;">НА
+            СВАЛКУ</a>
+    </div>
+</div>
 
-<h1>Топ исполнителей</h1>
-{% for user, total_likes in top_artists %}
-    <div>{{ user.username }} - всего лайков: {{ total_likes }}</div>
-{% endfor %}
+<div class="top-divider">
+    <span class="top-label">ТОПЫ</span>
+</div>
+
+<div class="genres-section">
+    <button class="genre-btn" id="genreToggle">ЖАНР: ВСЕ</button>
+</div>
+
+<div class="tops-container">
+    <!-- Топ треков -->
+    <div class="top-box">
+        <div class="top-box-title">ТОП ТРЕКОВ</div>
+        <div class="top-box-content">
+            <div class="top-row">
+                <div class="top-left">
+                    <div class="top-items-list">
+                        {% for i in range(5) %}
+                        <div class="top-item">
+                            <div class="item-rank">{{ i + 1 }}</div>
+                            {% if i < top_tracks|length %}
+                            <div class="track-card">
+                                <div class="track-play">
+                                    <div class="play-circle">
+                                        <div class="play-triangle"></div>
+                                    </div>
+                                </div>
+                                <div class="track-info">
+                                    <div class="track-title">{{ top_tracks[i].title }}</div>
+                                    <div class="track-artist">{{ top_tracks[i].user.username }}</div>
+                                </div>
+                            </div>
+                            <div class="item-likes">
+                                <div class="heart-icon"></div>
+                                <span class="likes-count">{{ top_tracks[i].likes_count }}</span>
+                            </div>
+                            {% else %}
+                            <div class="track-card empty">
+                                <div class="track-play">
+                                    <div class="play-circle"></div>
+                                </div>
+                                <div class="track-info">
+                                    <div class="track-title empty"></div>
+                                    <div class="track-artist empty"></div>
+                                </div>
+                            </div>
+                            <div class="item-likes">
+                                <div class="heart-icon"></div>
+                                <span class="likes-count">0</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="top-right">
+                    <div class="vertical-image">
+                        <img src="/static/imgs/kitten1.png" alt="top image">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Топ исполнителей -->
+    <div class="top-box">
+        <div class="top-box-title">ТОП ИСПОЛНИТЕЛЕЙ</div>
+        <div class="top-box-content">
+            <div class="top-row">
+                <div class="top-left">
+                    <div class="vertical-image">
+                        <img src="/static/imgs/kitten2.png" alt="top image">
+                    </div>
+                </div>
+                <div class="top-right">
+                    <div class="top-items-list">
+                        {% for i in range(5) %}
+                        <div class="top-item artist-item">
+                            <div class="item-rank">{{ i + 1 }}</div>
+                            {% if i < top_artists|length %}
+                            <div class="artist-card">
+                                <div class="artist-avatar"></div>
+                                <div class="artist-name">{{ top_artists[i][0].username }}</div>
+                            </div>
+                            <div class="item-likes">
+                                <div class="heart-icon"></div>
+                                <span class="likes-count">{{ top_artists[i][1] }}</span>
+                            </div>
+                            {% else %}
+                            <div class="artist-card empty">
+                                <div class="artist-avatar"></div>
+                                <div class="artist-name empty"></div>
+                            </div>
+                            <div class="item-likes">
+                                <div class="heart-icon"></div>
+                                <span class="likes-count">0</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
+
