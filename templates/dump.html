@@ -1,0 +1,53 @@
+{% extends "base2.html" %}
+
+{% block main %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1>СВАЛКА</h1>
+    </div>
+
+    <div class="text-center">
+        <!-- Картинка мусорки -->
+        <div class="trash-bin" id="trashBin">
+            <img src="/static/imgs/trash-icon.png" alt="мусорка" class="trash-image">
+        </div>
+
+        <!-- Плашка трека (скрыта по умолчанию) -->
+        <div class="dump-track-card" id="trackCard" style="display: none;">
+            <div class="track-play">
+                <div class="play-circle">
+                    <div class="play-triangle"></div>
+                </div>
+            </div>
+            <div class="dump-like-btn" id="likeBtn">
+                <div class="heart-icon"></div>
+                <span id="likesCount">0</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const trashBin = document.getElementById('trashBin');
+    const trackCard = document.getElementById('trackCard');
+    const likesCountSpan = document.getElementById('likesCount');
+    const likeBtn = document.getElementById('likeBtn');
+
+    let currentLikes = 0;
+
+    function loadRandomTrack() {
+        trackCard.style.display = 'flex';
+        currentLikes = Math.floor(Math.random() * 100);
+        likesCountSpan.textContent = currentLikes;
+    }
+
+    trashBin.addEventListener('click', () => {
+        loadRandomTrack();
+    });
+
+    likeBtn.addEventListener('click', () => {
+        currentLikes += 1;
+        likesCountSpan.textContent = currentLikes;
+    });
+</script>
+{% endblock %}

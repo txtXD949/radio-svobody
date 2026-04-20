@@ -11,6 +11,7 @@ import os
 from data import db_session
 from data.users import User
 from data.tracks import Track
+from data.dump import Dump
 from data.api_key import ApiKey
 from resources import (
     TrackResource, TrackListResource, TrackLikeResource,
@@ -159,6 +160,14 @@ def index():
         func.sum(Track.likes_count).desc()).limit(5).all()
 
     return render_template('index.html', top_tracks=top_tracks, top_artists=top_artists, title='Radio Svobodi')
+
+
+@app.route('/dump')
+def dump():
+    db_sess = db_session.create_session()
+
+    dump_track = db_sess.query(Track).join(Dump, Track.id == Dump.track_id).first()
+    return render_template('dump.html', track=dump_track, title='Свалка')
 
 
 if __name__ == '__main__':
