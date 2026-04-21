@@ -1,7 +1,9 @@
 from flask_restful import Resource, abort
 from flask import jsonify, request
+from flask_login import current_user, login_required
 from data import db_session
 from data.tracks import Track
+from data.likes import Like
 from data.api_key import ApiKey
 from .track_parser import track_parser
 
@@ -88,9 +90,26 @@ class TrackListResource(Resource):
 
 
 class TrackLikeResource(Resource):
+    @login_required
     def post(self, track_id):
-        check_api_key()
-        db_sess, track = not_found_track(track_id)
-        track.likes_count += 1
-        db_sess.commit()
-        return jsonify({'success': 'OK', 'likes_count': track.likes_count})
+        db_sess = db_session.create_session()
+        user_id = current_user.id
+
+        ex_like = db_sess.query(Like).filter(
+            Like.track_id == track_id,
+            Like.user_id == user_id
+        ).first()
+
+        track = db_sess.query(Track).get(track_id)
+
+        if ex_like:
+            db_sess.delete(ex_like)
+            track.likes_count -= 1
+            db_sess.commit()
+            return {'likes_count': track.likes_count, 'liked': False}
+        else:
+            like = Like(track_id=track_id, user_id=user_id)
+            db_sess.add(like)
+            track.likes_count += 1
+            db_sess.commit()
+            return {'likes_count': track.likes_count, 'liked': True}

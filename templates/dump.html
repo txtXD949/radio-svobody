@@ -3,14 +3,10 @@
 {% block main %}
 <div class="container py-5">
     <div class="text-center mb-5">
-        <h1>СВАЛКА</h1>
+        <h1 class="offcanvas-title" style="font-size: 54px !important;">СВАЛКА</h1>
     </div>
 
     <div class="text-center">
-        <!-- Картинка мусорки -->
-        <div class="trash-bin" id="trashBin">
-            <img src="/static/imgs/trash-icon.png" alt="мусорка" class="trash-image">
-        </div>
 
         <!-- Плашка трека (скрыта по умолчанию) -->
         <div class="dump-track-card" id="trackCard" style="display: none;">
@@ -24,7 +20,18 @@
                 <span id="likesCount">0</span>
             </div>
         </div>
+
+        <!-- Картинка мусорки -->
+        <div class="trash-bin" id="trashBin">
+            <img src="/static/imgs/trash-icon.png" alt="мусорка" class="trash-image">
+            <p class="offcanvas-title" style="font-size: 32px;">ЖМИ НА МЕНЯ!</p>
+        </div>
     </div>
+
+    <div>
+        <h1 class="text-center offcanvas-title" style="margin-top: 600px; font-size: 32px;">Тут пусто</h1>
+    </div>
+
 </div>
 
 <script>
@@ -33,11 +40,38 @@
     const likesCountSpan = document.getElementById('likesCount');
     const likeBtn = document.getElementById('likeBtn');
 
+    let currentTrackId = null;
     let currentLikes = 0;
 
-    function loadRandomTrack() {
-        trackCard.style.display = 'flex';
-        currentLikes = Math.floor(Math.random() * 100);
+    async function loadRandomTrack() {
+        const response = await fetch('/api/dump/random', {
+            headers: {
+                'X-API-Key': '{{ api_key }}'
+            }
+        });
+        const data = await response.json();
+
+        if (data.track) {
+            currentTrackId = data.track.id;
+            currentLikes = data.track.likes_count;
+            likesCountSpan.textContent = currentLikes;
+            trackCard.style.display = 'flex';
+        } else {
+            trackCard.style.display = 'none';
+        }
+    }
+
+    async function likeTrack() {
+        if (!currentTrackId) return;
+
+        const response = await fetch(`/api/tracks/${currentTrackId}/like`, {
+            method: 'POST',
+            headers: {
+                'X-API-Key': '{{ api_key }}'
+            }
+        });
+        const data = await response.json();
+        currentLikes = data.likes_count;
         likesCountSpan.textContent = currentLikes;
     }
 
@@ -46,8 +80,7 @@
     });
 
     likeBtn.addEventListener('click', () => {
-        currentLikes += 1;
-        likesCountSpan.textContent = currentLikes;
+        likeTrack();
     });
 </script>
 {% endblock %}
