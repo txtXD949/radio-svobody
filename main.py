@@ -1,16 +1,20 @@
 from flask import Flask, jsonify, redirect, render_template
 from flask_restful import Api
 from werkzeug.exceptions import HTTPException
-from flask_login import LoginManager, login_user, logout_user, login_required
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from sqlalchemy import func
 
 from dotenv import load_dotenv
 import os
+from random import choice
 
 from data import db_session
 from data.users import User
 from data.tracks import Track
+from data.dump import Dump
+from data.likes import Like
 from data.api_key import ApiKey
 from resources import (
     TrackResource, TrackListResource, TrackLikeResource,
@@ -161,10 +165,40 @@ def index():
     return render_template('index.html', top_tracks=top_tracks, top_artists=top_artists, title='Radio Svobodi')
 
 
+@app.route('/dump')
+def dump():
+    db_sess = db_session.create_session()
+
+    dump_track = db_sess.query(Track).join(Dump, Track.id == Dump.track_id).first()
+    return render_template('dump.html', track=dump_track, title='Свалка', api_key=os.getenv('ADMIN_API_KEY'))
+
+
+@app.route('/api/dump/random')
+def api_dump_random():
+    db_sess = db_session.create_session()
+
+    dump_tracks = db_sess.query(Track).join(Dump, Track.id == Dump.track_id).all()
+
+    print(f"Найдено треков в свалке: {len(dump_tracks)}")
+
+    if not dump_tracks:
+        return jsonify({'track': None})
+
+    random_track = choice(dump_tracks)
+
+    return jsonify({
+        'track': {
+            'id': random_track.id,
+            'likes_count': random_track.likes_count
+        }
+    })
+
+
+
 if __name__ == '__main__':
     db_session.global_init('db/rs.db')
 
-    session = db_session.create_session()
+    # session = db_session.create_session()
     # if not session.query(ApiKey).first():
     #     admin_key = ApiKey(
     #         key=ApiKey.generate_key(),
@@ -172,6 +206,7 @@ if __name__ == '__main__':
     #     )
     #     session.add(admin_key)
     #     session.commit()
-    session.close()
+    #     print(f'ADMIN API KEY: {admin_key.key}')
+    # session.close()
 
     app.run(host='127.0.0.1', port=5000)
