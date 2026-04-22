@@ -758,3 +758,21 @@ a:hover {
 .dump-like-btn:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
+
+/* Редактор */
+.editor-container {
+    padding: 20px 0;
+}
+
+.audiomass-frame {
+    width: 100%;
+    height: 70vh;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: white;
+}
+
+.editor-actions {
+    margin-top: 20px;
+    text-align: center;
+}

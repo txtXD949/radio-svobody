@@ -1,3 +1,5 @@
+import time
+
 from flask import Flask, jsonify, redirect, render_template
 from flask_restful import Api
 from werkzeug.exceptions import HTTPException
@@ -10,11 +12,14 @@ from dotenv import load_dotenv
 import os
 from random import choice
 
+from werkzeug.utils import secure_filename
+
 from data import db_session
 from data.users import User
 from data.tracks import Track
 from data.dump import Dump
 from data.likes import Like
+from data.genres import Genre
 from data.api_key import ApiKey
 from resources import (
     TrackResource, TrackListResource, TrackLikeResource,
@@ -23,7 +28,7 @@ from resources import (
     StatsResource,
     ApiKeyResource, ApiKeyDetailResource
 )
-from utils.forms import LoginForm, RegisterForm
+from utils.forms import LoginForm, RegisterForm, TrackForm
 from utils.mail_utils import send_conf_email, conf_token
 from utils.mail_init import mail
 
@@ -193,6 +198,44 @@ def api_dump_random():
         }
     })
 
+
+@app.route('/editor')
+@login_required
+def editor():
+    return render_template('editor.html', title='Создать трек')
+
+
+@app.route('/upload-track', methods=['GET', 'POST'])
+@login_required
+def update_track():
+    form = TrackForm()
+
+    db_sess = db_session.create_session()
+    genres = db_sess.query(Genre).all()
+    form.genre_id.choices = [(g.id, g.title) for g in genres]
+
+    if form.validate_on_submit():
+        audio = form.audio_file.data
+        filename = secure_filename(f'{current_user.id}_{int(time.time())}.mp3')
+        filepath = os.path.join('uploads', filename)
+        audio.save(filepath)
+
+        track = Track(
+            title=form.title.data,
+            file_path=filepath,
+            user_id=current_user.id,
+            genre_id=form.genre_id.data,
+            subgenres=form.subgenres.data
+        )
+        db_sess.add(track)
+        db_sess.commit()
+
+        dump = Dump(track_id=track.id)
+        db_sess.add(dump)
+        db_sess.commit()
+
+        return redirect('/dump')
+    return render_template('upload.html', form=form, title='Загрузить трек')
 
 
 if __name__ == '__main__':

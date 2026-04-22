@@ -1,5 +1,7 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField
 from wtforms import EmailField, PasswordField, BooleanField, SubmitField, StringField
+from wtforms.fields.choices import SelectField
 from wtforms.validators import DataRequired, Email
 
 
@@ -16,3 +18,11 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Пароль', validators=[DataRequired()])
     repeat_password = PasswordField('Повторите пароль', validators=[DataRequired()])
     submit = SubmitField('РЕГИСТРАЦИЯ')
+
+
+class TrackForm(FlaskForm):
+    title = StringField('Название', validators=[DataRequired()])
+    audio_file = FileField('Аудиофайл (.mp3)', validators=[DataRequired()])
+    genre_id = SelectField('Жанр', validators=[DataRequired()])
+    subgenres = StringField('Поджанры (через запятую)')
+    submit = SubmitField('КИНУТЬ В СВАЛКУ')
