@@ -240,6 +240,12 @@ def update_track():
     return render_template('upload.html', form=form, title='Загрузить трек')
 
 
+@app.route('/about')
+def about():
+    return render_template('about.html', title='О нас')
+
+
+
 if __name__ == '__main__':
     db_session.global_init('db/rs.db')
 

@@ -270,6 +270,12 @@ a:hover {
     gap: 30px;
 }
 
+.footer span {
+    flex-direction: column;
+    gap: 16px;
+    font-size: 14px;
+}
+
 .footer-links {
     display: flex;
     flex-direction: column;
@@ -296,7 +302,6 @@ a:hover {
     display: block;
     width: 32px;
     height: 32px;
-    border: 1px solid white;
     border-radius: 50%;
     transition: all 0.2s;
 }
@@ -775,4 +780,15 @@ a:hover {
 .editor-actions {
     margin-top: 20px;
     text-align: center;
+}
+
+/* О нас */
+.about-text p {
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    margin-top: 20px;
+    border-left: 3px solid var(--primary);
+    padding-left: 16px;
+    font-style: italic;
 }
