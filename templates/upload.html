@@ -26,7 +26,7 @@
                     
                     <div class="mb-3">
                         {{ form.audio_file.label }}
-                        {{ form.audio_file(class="form-control") }}
+                        {{ form.audio_file(class="form-control", accept=".mp3,.wav,.ogg") }}
                     </div>
                     
                     {{ form.submit(class="btn btn-primary w-100") }}

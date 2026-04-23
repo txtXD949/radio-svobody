@@ -1,24 +1,21 @@
-import time
-
 from flask import Flask, jsonify, redirect, render_template
-from flask_restful import Api
+from flask_restful import Api, abort
 from werkzeug.exceptions import HTTPException
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from sqlalchemy import func
 
 from dotenv import load_dotenv
 import os
 from random import choice
-
+import time
 from werkzeug.utils import secure_filename
+from re import fullmatch, IGNORECASE
 
 from data import db_session
 from data.users import User
 from data.tracks import Track
 from data.dump import Dump
-from data.likes import Like
 from data.genres import Genre
 from data.api_key import ApiKey
 from resources import (
@@ -216,14 +213,19 @@ def update_track():
 
     if form.validate_on_submit():
         audio = form.audio_file.data
+
+        extens = r'mp3|ogg|wav'
+        if not fullmatch(fr'.+\.({extens})', audio.filename, IGNORECASE):
+            abort(400, message='Неподдерживаемый формат файла')
+
         filename = secure_filename(f'{current_user.id}_{int(time.time())}.mp3')
-        filepath = os.path.join('uploads', filename)
+        filepath = f'uploads/{filename}'
         audio.save(filepath)
 
         track = Track(
             title=form.title.data,
             file_path=filepath,
-            user_id=current_user.id,
+            users_id=current_user.id,
             genre_id=form.genre_id.data,
             subgenres=form.subgenres.data
         )
