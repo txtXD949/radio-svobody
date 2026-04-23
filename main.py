@@ -161,6 +161,12 @@ def index():
     return render_template('index.html', top_tracks=top_tracks, top_artists=top_artists, title='Radio Svobodi')
 
 
+@app.route('/about')
+def about():
+    return render_template('about.html', title='О нас')
+
+
+
 if __name__ == '__main__':
     db_session.global_init('db/rs.db')
 
