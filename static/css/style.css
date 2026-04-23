@@ -310,15 +310,6 @@ a:hover {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* Временные заглушки для иконок TODO: потом сделать */
-.social-link.telegram {
-    background-color: transparent;
-}
-
-.social-link.discord {
-    background-color: transparent;
-}
-
 .mini-player {
     position: fixed;
     bottom: 0;
