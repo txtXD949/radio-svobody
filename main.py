@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, redirect, render_template
+from flask import Flask, jsonify, redirect, render_template, send_from_directory
 from flask_restful import Api, abort
 from werkzeug.exceptions import HTTPException
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -243,6 +243,18 @@ def update_track():
 @app.route('/about')
 def about():
     return render_template('about.html', title='О нас')
+
+
+@app.route('/api/tracks/<int:track_id>/stream')
+def stream_tracks(track_id):
+    db_sess = db_session.create_session()
+    track = db_sess.get(Track, track_id)
+    if not track:
+        return '', 404
+    return send_from_directory(
+        os.path.dirname(track.file_path),
+        os.path.basename(track.file_path)
+    )
 
 
 

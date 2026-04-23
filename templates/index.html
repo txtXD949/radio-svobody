@@ -36,7 +36,7 @@
                             <div class="item-rank">{{ i + 1 }}</div>
                             {% if i < top_tracks|length %}
                             <div class="track-card">
-                                <div class="track-play">
+                                <div class="track-play" data-id="{{ top_tracks[i].id }}">
                                     <div class="play-circle">
                                         <div class="play-triangle"></div>
                                     </div>
@@ -121,5 +121,22 @@
     </div>
 </div>
 
-{% endblock %}
+<script>
+    document.querySelectorAll('.track-play').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const trackId = btn.getAttribute('data-id');
+            if (trackId) {
+                const trackCard = btn.closest('.track-card');
+                const trackTitle = trackCard.querySelector('.track-title').textContent;
 
+                player.playSingleTrack({
+                    id: trackId,
+                    title: trackTitle,
+                    cover_url: null
+                });
+            }
+        });
+    });
+</script>
+
+{% endblock %}

@@ -783,3 +783,7 @@ a:hover {
     padding-left: 16px;
     font-style: italic;
 }
+
+.play-triangle {
+    transition: opacity 0.2s;
+}

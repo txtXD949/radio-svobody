@@ -10,7 +10,7 @@
 
         <!-- Плашка трека (скрыта по умолчанию) -->
         <div class="dump-track-card" id="trackCard" style="display: none;">
-            <div class="track-play">
+            <div class="track-play" data-id="{{ currentTrackId }}">
                 <div class="play-circle">
                     <div class="play-triangle"></div>
                 </div>
@@ -53,6 +53,11 @@
 
         if (data.track) {
             currentTrackId = data.track.id;
+
+            // Обновляем data-id у кнопки
+            const playBtn = document.querySelector('.track-play');
+            if (playBtn) playBtn.setAttribute('data-id', currentTrackId);
+
             currentLikes = data.track.likes_count;
             likesCountSpan.textContent = currentLikes;
             trackCard.style.display = 'flex';
@@ -82,5 +87,18 @@
     likeBtn.addEventListener('click', () => {
         likeTrack();
     });
+
+    const playTrackBtn = document.querySelector('.track-play');
+    if (playTrackBtn) {
+        playTrackBtn.addEventListener('click', () => {
+            if (currentTrackId) {
+                player.playSingleTrack({
+                    id: currentTrackId,
+                    title: 'Трек из свалки',
+                    cover_url: null
+                });
+            }
+        });
+    }
 </script>
 {% endblock %}
