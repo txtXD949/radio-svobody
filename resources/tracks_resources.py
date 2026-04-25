@@ -67,7 +67,14 @@ class TrackListResource(Resource):
     def get(self):
         check_api_key()
         db_sess = db_session.create_session()
-        tracks = db_sess.query(Track).all()
+
+        genre_id = request.args.get('genre_id', type=int)
+
+        if genre_id and genre_id > 0:
+            tracks = db_sess.query(Track).filter(Track.genre_id == genre_id)
+        else:
+            tracks = db_sess.query(Track).all()
+
         return jsonify({'tracks': [t.to_dict() for t in tracks]})
 
     def post(self):

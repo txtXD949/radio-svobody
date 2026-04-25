@@ -164,7 +164,7 @@ def index():
                                               ).join(Track, User.id == Track.users_id).group_by(User.id).order_by(
         func.sum(Track.likes_count).desc()).limit(5).all()
 
-    return render_template('index.html', top_tracks=top_tracks, top_artists=top_artists, title='Radio Svobodi')
+    return render_template('index.html', top_tracks=top_tracks, top_artists=top_artists, title='Радио Свободы', api_key=os.getenv('ADMIN_API_KEY'))
 
 
 @app.route('/dump')
