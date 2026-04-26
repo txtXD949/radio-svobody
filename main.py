@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, redirect, render_template, send_from_directory
+from flask import Flask, jsonify, redirect, render_template, send_from_directory, request
 from flask_restful import Api, abort
 from werkzeug.exceptions import HTTPException
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -254,6 +254,26 @@ def stream_tracks(track_id):
     return send_from_directory(
         os.path.dirname(track.file_path),
         os.path.basename(track.file_path)
+    )
+
+
+@app.route('/search')
+def search():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return redirect('/')
+
+    db_sess = db_session.create_session()
+
+    tracks = db_sess.query(Track).filter(Track.title.ilike(f'%{query}%')).order_by(Track.likes_count.desc()).all()
+    artists = db_sess.query(User).filter(User.username.ilike(f'%{query}%')).all()
+
+    return render_template(
+        'search.html',
+        query=query,
+        tracks=tracks,
+        artists=artists,
+        title=f'Поиск: {query}'
     )
 
 

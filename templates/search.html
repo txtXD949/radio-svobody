@@ -1,0 +1,76 @@
+{% extends "base2.html" %}
+
+{% block main %}
+<div class="container py-5">
+    <h1 class="mb-4">Результаты поиска: <span class="text-primary">{{ query }}</span></h1>
+
+    {% if not tracks and not artists %}
+        <p class="text-secondary">Ничего не найдено</p>
+    {% endif %}
+
+    {% if tracks %}
+    <div class="top-box mb-5">
+        <div class="top-box-title">ТРЕКИ</div>
+        <div class="top-box-content">
+            <div class="top-items-list">
+                {% for track in tracks[:10] %}
+                <div class="top-item">
+                    <div class="track-card w-100">
+                        <div class="track-play" data-id="{{ track.id }}">
+                            <div class="play-circle">
+                                <div class="play-triangle"></div>
+                            </div>
+                        </div>
+                        <div class="track-info flex-grow-1">
+                            <div class="track-title">{{ track.title }}</div>
+                            <div class="track-artist">{{ track.user.username }}</div>
+                        </div>
+                        <div class="item-likes">
+                            <div class="heart-icon"></div>
+                            <span class="likes-count">{{ track.likes_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if artists %}
+    <div class="top-box">
+        <div class="top-box-title">ИСПОЛНИТЕЛИ</div>
+        <div class="top-box-content">
+            <div class="top-items-list">
+                {% for artist in artists[:10] %}
+                <div class="top-item artist-item">
+                    <div class="artist-card w-100">
+                        <div class="artist-avatar"></div>
+                        <div class="artist-name">{{ artist.username }}</div>
+                    </div>
+                    <div class="item-likes">
+                        <div class="heart-icon"></div>
+                        <span class="likes-count">{{ artist.tracks|sum(attribute='likes_count') }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    document.querySelectorAll('.track-play').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const trackId = btn.getAttribute('data-id');
+            const trackTitle = btn.closest('.track-card').querySelector('.track-title').textContent;
+            player.playSingleTrack({
+                id: trackId,
+                title: trackTitle,
+                cover_url: null
+            });
+        });
+    });
+</script>
+{% endblock %}

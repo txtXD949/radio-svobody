@@ -187,15 +187,6 @@ a:hover {
     flex-shrink: 0;
 }
 
-.search-input {
-    flex: 1;
-    padding: 12px 20px;
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: 34px;
-    color: var(--text);
-}
-
 .right-group {
     display: flex;
     gap: 16px;
@@ -786,4 +777,26 @@ a:hover {
 
 .play-triangle {
     transition: opacity 0.2s;
+}
+
+/* Строка поиска */
+.search-form {
+    flex: 1;
+    max-width: 1100px;
+    margin: 0 20px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 20px;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 34px;
+    color: var(--text);
+    font-size: 16px;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary);
 }

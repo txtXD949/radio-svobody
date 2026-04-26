@@ -11,7 +11,9 @@
         </div>
     </button>
 
-    <input type="text" class="search-input" placeholder="Поиск...">
+    <form action="/search" method="get" class="search-form">
+        <input type="text" name="q" class="search-input" placeholder="Поиск..." value="{{ request.args.get('q', '') }}">
+    </form>
 
     <button class="theme-toggle"></button>
 
