@@ -38,6 +38,7 @@ class TrackResource(Resource):
         check_api_key()
         db_sess, track = not_found_track(track_id)
         db_sess.commit()
+        db_sess.close()
         return jsonify({'track': track.to_dict()})
 
     def delete(self, track_id):
@@ -45,6 +46,7 @@ class TrackResource(Resource):
         db_sess, track = not_found_track(track_id)
         db_sess.delete(track)
         db_sess.commit()
+        db_sess.close()
         return jsonify({'success': 'OK'})
 
     def put(self, track_id):
@@ -60,6 +62,7 @@ class TrackResource(Resource):
         track.collaborations = args['collaborations']
 
         db_sess.commit()
+        db_sess.close()
         return jsonify({'success': 'OK'})
 
 
@@ -75,7 +78,11 @@ class TrackListResource(Resource):
         else:
             tracks = db_sess.query(Track).all()
 
-        return jsonify({'tracks': [t.to_dict() for t in tracks]})
+        tracks_data = [t.to_dict() for t in tracks]
+
+        db_sess.close()
+
+        return jsonify({'tracks': tracks_data})
 
     def post(self):
         check_api_key()  # Проверка ключа
@@ -93,6 +100,7 @@ class TrackListResource(Resource):
 
         db_sess.add(track)
         db_sess.commit()
+        db_sess.close()
         return jsonify({'id': track.id})
 
 
@@ -100,23 +108,22 @@ class TrackLikeResource(Resource):
     @login_required
     def post(self, track_id):
         db_sess = db_session.create_session()
-        user_id = current_user.id
+        try:
+            user_id = current_user.id
+            ex_like = db_sess.query(Like).filter(Like.track_id == track_id, Like.user_id == user_id).first()
+            track = db_sess.get(Track, track_id)
 
-        ex_like = db_sess.query(Like).filter(
-            Like.track_id == track_id,
-            Like.user_id == user_id
-        ).first()
+            if ex_like:
+                db_sess.delete(ex_like)
+                track.likes_count -= 1
+            else:
+                like = Like(track_id=track_id, user_id=user_id)
+                db_sess.add(like)
+                track.likes_count += 1
 
-        track = db_sess.query(Track).get(track_id)
-
-        if ex_like:
-            db_sess.delete(ex_like)
-            track.likes_count -= 1
             db_sess.commit()
-            return {'likes_count': track.likes_count, 'liked': False}
-        else:
-            like = Like(track_id=track_id, user_id=user_id)
-            db_sess.add(like)
-            track.likes_count += 1
-            db_sess.commit()
-            return {'likes_count': track.likes_count, 'liked': True}
+            likes_count = track.likes_count  # прочитали ДО закрытия сессии
+        finally:
+            db_sess.close()
+
+        return {'likes_count': likes_count, 'liked': ex_like is None}

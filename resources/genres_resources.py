@@ -9,6 +9,7 @@ from .auth import check_api_key
 def not_found_genre(genre_id):
     db_sess = db_session.create_session()
     genre = db_sess.query(Genre).get(genre_id)
+    db_sess.close()
     if not genre:
         abort(404, message=f'Genre {genre_id} not found')
     return db_sess, genre
@@ -18,6 +19,7 @@ class GenreResource(Resource):
     def get(self, genre_id):
         check_api_key()
         db_sess, genre = not_found_genre(genre_id)
+        db_sess.close()
         return jsonify({'genre': genre.to_dict()})
 
     def delete(self, genre_id):
@@ -25,6 +27,7 @@ class GenreResource(Resource):
         db_sess, genre = not_found_genre(genre_id)
         db_sess.delete(genre)
         db_sess.commit()
+        db_sess.close()
         return jsonify({'success': 'OK'})
 
 
@@ -33,6 +36,7 @@ class GenreListResource(Resource):
         check_api_key()
         db_sess = db_session.create_session()
         genres = db_sess.query(Genre).all()
+        db_sess.close()
         return jsonify({'genres': [g.to_dict() for g in genres]})
 
     def post(self):
@@ -43,4 +47,5 @@ class GenreListResource(Resource):
         genre = Genre(title=args['title'])
         db_sess.add(genre)
         db_sess.commit()
+        db_sess.close()
         return jsonify({'id': genre.id})
