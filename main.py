@@ -1,23 +1,21 @@
-from flask import Flask, jsonify, redirect, render_template, send_from_directory, request
-from flask_restful import Api, abort
-from werkzeug.exceptions import HTTPException
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-
-from sqlalchemy import func
-
-from dotenv import load_dotenv
 import os
-from random import choice
 import time
-from werkzeug.utils import secure_filename
+from random import choice
 from re import fullmatch, IGNORECASE
 
+from dotenv import load_dotenv
+from flask import Flask, jsonify, redirect, render_template, send_from_directory, request
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_restful import Api, abort
+from sqlalchemy import func
+from werkzeug.exceptions import HTTPException
+from werkzeug.utils import secure_filename
+
 from data import db_session
-from data.users import User
-from data.tracks import Track
 from data.dump import Dump
 from data.genres import Genre
-from data.api_key import ApiKey
+from data.tracks import Track
+from data.users import User
 from resources import (
     TrackResource, TrackListResource, TrackLikeResource,
     UserResource, UserListResource,
@@ -26,8 +24,8 @@ from resources import (
     ApiKeyResource, ApiKeyDetailResource
 )
 from utils.forms import LoginForm, RegisterForm, TrackForm
-from utils.mail_utils import send_conf_email, conf_token
 from utils.mail_init import mail
+from utils.mail_utils import send_conf_email, conf_token
 
 load_dotenv()
 
