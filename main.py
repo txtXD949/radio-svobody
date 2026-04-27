@@ -266,7 +266,12 @@ def search():
     db_sess = db_session.create_session()
 
     tracks = db_sess.query(Track).filter(Track.title.ilike(f'%{query}%')).order_by(Track.likes_count.desc()).all()
-    artists = db_sess.query(User).filter(User.username.ilike(f'%{query}%')).all()
+
+    artists = db_sess.query(
+        User, func.coalesce(func.sum(Track.likes_count), 0).label('total_likes')
+    ).outerjoin(Track, User.id == Track.users_id).filter(
+        User.username.ilike(f'%{query}%')
+    ).group_by(User.id).order_by(func.sum(Track.likes_count).desc()).all()
 
     return render_template(
         'search.html',

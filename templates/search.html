@@ -5,7 +5,7 @@
     <h1 class="mb-4">Результаты поиска: <span class="text-primary">{{ query }}</span></h1>
 
     {% if not tracks and not artists %}
-        <p class="text-secondary">Ничего не найдено</p>
+    <p class="text-secondary">Ничего не найдено</p>
     {% endif %}
 
     {% if tracks %}
@@ -42,7 +42,7 @@
         <div class="top-box-title">ИСПОЛНИТЕЛИ</div>
         <div class="top-box-content">
             <div class="top-items-list">
-                {% for artist in artists[:10] %}
+                {% for artist, total_likes in artists[:10] %}
                 <div class="top-item artist-item">
                     <div class="artist-card w-100">
                         <div class="artist-avatar"></div>
@@ -50,7 +50,7 @@
                     </div>
                     <div class="item-likes">
                         <div class="heart-icon"></div>
-                        <span class="likes-count">{{ artist.tracks|sum(attribute='likes_count') }}</span>
+                        <span class="likes-count">{{ total_likes }}</span>
                     </div>
                 </div>
                 {% endfor %}
