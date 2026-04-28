@@ -17,15 +17,19 @@ from data.users import User
 from data.tracks import Track
 from data.dump import Dump
 from data.genres import Genre
+from data.playlists import Playlist
+from data.playlist_tracks import PlaylistTrack
 from data.api_key import ApiKey
 from resources import (
     TrackResource, TrackListResource, TrackLikeResource,
     UserResource, UserListResource,
     GenreResource, GenreListResource,
     StatsResource,
-    ApiKeyResource, ApiKeyDetailResource
+    ApiKeyResource, ApiKeyDetailResource,
+    PlaylistTracksResource, PlaylistTrackResource,
+    PlaylistListResource, PlaylistResource
 )
-from utils.forms import LoginForm, RegisterForm, TrackForm
+from utils.forms import LoginForm, RegisterForm, TrackForm, PlaylistForm
 from utils.mail_utils import send_conf_email, conf_token
 from utils.mail_init import mail
 
@@ -47,6 +51,10 @@ api.add_resource(GenreResource, '/api/genres/<int:genre_id>')
 api.add_resource(StatsResource, '/api/stats')
 api.add_resource(ApiKeyResource, '/api/keys')
 api.add_resource(ApiKeyDetailResource, '/api/keys/<int:key_id>')
+api.add_resource(PlaylistListResource, '/api/playlists')
+api.add_resource(PlaylistResource, '/api/playlists/<int:playlist_id>')
+api.add_resource(PlaylistTracksResource, '/api/playlists/<int:playlist_id>/tracks')
+api.add_resource(PlaylistTrackResource, '/api/playlists/<int:playlist_id>/tracks/<int:track_id>')
 
 # почта
 app.config['MAIL_SERVER'] = 'smtp.yandex.ru'
@@ -164,7 +172,8 @@ def index():
                                               ).join(Track, User.id == Track.users_id).group_by(User.id).order_by(
         func.sum(Track.likes_count).desc()).limit(5).all()
 
-    return render_template('index.html', top_tracks=top_tracks, top_artists=top_artists, title='Радио Свободы', api_key=os.getenv('ADMIN_API_KEY'))
+    return render_template('index.html', top_tracks=top_tracks, top_artists=top_artists, title='Радио Свободы',
+                           api_key=os.getenv('ADMIN_API_KEY'))
 
 
 @app.route('/dump')
@@ -219,7 +228,7 @@ def update_track():
             abort(400, message='Неподдерживаемый формат файла')
 
         filename = secure_filename(f'{current_user.id}_{int(time.time())}.mp3')
-        filepath = f'uploads/{filename}'
+        filepath = f'uploads/snds/{filename}'
         audio.save(filepath)
 
         track = Track(
@@ -282,6 +291,47 @@ def search():
     )
 
 
+@app.route('/playlists')
+@login_required
+def playlists():
+    return render_template('playlists.html', title='Мои плейлисты', api_key=os.getenv('ADMIN_API_KEY'))
+
+
+@app.route('/playlists/create', methods=['GET', 'POST'])
+@login_required
+def create_playlist():
+    form = PlaylistForm()
+
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        playlist = Playlist(
+            user_id=current_user.id,
+            title=form.title.data
+        )
+        db_sess.add(playlist)
+        db_sess.commit()
+        return redirect('/playlists')
+
+    return render_template('create_playlist.html', title='Новый плейлист', form=form, api_key=os.getenv('ADMIN_API_KEY'))
+
+
+@app.route('/playlist/<int:playlist_id>')
+@login_required
+def playlist_page(playlist_id):
+    db_sess = db_session.create_session()
+    playlist = db_sess.query(Playlist).filter(
+        Playlist.id == playlist_id,
+        Playlist.user_id == current_user.id
+    ).first()
+
+    if not playlist:
+        abort(404)
+
+    return render_template('playlist_detail.html',
+                           playlist_id=playlist_id,
+                           playlist_title=playlist.title,
+                           title=playlist.title,
+                           api_key=os.getenv('ADMIN_API_KEY'))
 
 if __name__ == '__main__':
     db_session.global_init('db/rs.db')

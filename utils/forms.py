@@ -29,3 +29,9 @@ class TrackForm(FlaskForm):
     genre_id = SelectField('Жанр', coerce=int, validators=[DataRequired()])
     subgenres = StringField('Поджанры (через запятую)')
     submit = SubmitField('КИНУТЬ В СВАЛКУ')
+
+
+class PlaylistForm(FlaskForm):
+    title = StringField('Название плейлиста', validators=[DataRequired()])
+    submit = SubmitField('СОЗДАТЬ')
+

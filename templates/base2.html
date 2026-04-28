@@ -1,6 +1,16 @@
 {% extends "base1.html" %}
 
 {% block header %}
+<div id="playlistDropdown" class="playlist-dropdown" style="display: none;">
+    <div class="playlist-dropdown-header">
+        <span>Добавить в плейлист</span>
+        <button class="close-dropdown">✕</button>
+    </div>
+    <div class="playlist-dropdown-list" id="playlistDropdownList">
+        <div class="loading">Загрузка...</div>
+    </div>
+</div>
+
 <div class="top-bar">
     <button class="custom-menu-btn" id="menuToggle" type="button"
             data-bs-toggle="offcanvas" data-bs-target="#mainDrawer">
@@ -59,7 +69,7 @@
         </div>
 
         <div class="player-right">
-            <button class="player-fav">+</button>
+            <button class="player-fav" id="addToPlaylistBtn">+</button>
         </div>
     </div>
 </div>
@@ -77,5 +87,107 @@
         </div>
     </div>
 </footer>
+
+<script>
+    // Элементы
+    const addBtn = document.getElementById('addToPlaylistBtn');
+    const dropdown = document.getElementById('playlistDropdown');
+    const dropdownList = document.getElementById('playlistDropdownList');
+    const closeDropdownBtn = document.querySelector('.close-dropdown');
+
+    let currentTrackForPlaylist = null;
+
+    // Функция загрузки плейлистов
+    async function loadPlaylistsForDropdown() {
+        dropdownList.innerHTML = '<div class="playlist-dropdown-loading">Загрузка...</div>';
+
+        const response = await fetch('/api/playlists', {
+            headers: { 'X-API-Key': '{{ api_key }}' }
+        });
+        const playlists = await response.json();
+
+        if (!playlists.length) {
+            dropdownList.innerHTML = '<div class="playlist-dropdown-empty">Нет плейлистов<br><a href="/playlists/create">Создать</a></div>';
+            return;
+        }
+
+        dropdownList.innerHTML = playlists.map(p => `
+            <div class="playlist-dropdown-item" data-playlist-id="${p.id}" data-playlist-title="${escapeHTML(p.title)}">
+                <span class="playlist-dropdown-item-title">${escapeHTML(p.title)}</span>
+                <span class="playlist-dropdown-item-add">+</span>
+            </div>
+        `).join('');
+
+        // Добавляем обработчики
+        document.querySelectorAll('.playlist-dropdown-item').forEach(item => {
+            item.addEventListener('click', async (e) => {
+                const playlistId = item.dataset.playlistId;
+                if (currentTrackForPlaylist) {
+                    await addTrackToPlaylist(playlistId, currentTrackForPlaylist.id);
+                }
+                dropdown.style.display = 'none';
+            });
+        });
+    }
+
+    // Функция добавления трека в плейлист
+    async function addTrackToPlaylist(playlistId, trackId) {
+        const response = await fetch(`/api/playlists/${playlistId}/tracks`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': '{{ api_key }}'
+            },
+            body: JSON.stringify({ track_id: trackId })
+        });
+
+        if (response.ok) {
+            // Можно показать временное уведомление
+            console.log('Трек добавлен в плейлист');
+        } else {
+            const error = await response.json();
+            alert(error.message || 'Ошибка при добавлении');
+        }
+    }
+
+    function escapeHTML(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Открытие дропдауна
+    addBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+
+        // Получаем текущий трек из плеера
+        if (!player.currentTrack) {
+            alert('Нет активного трека');
+            return;
+        }
+
+        currentTrackForPlaylist = player.currentTrack;
+
+        // Загружаем плейлисты и показываем дропдаун
+        await loadPlaylistsForDropdown();
+        dropdown.style.display = 'block';
+    });
+
+    // Закрытие дропдауна
+    function closeDropdown() {
+        dropdown.style.display = 'none';
+    }
+
+    closeDropdownBtn.addEventListener('click', closeDropdown);
+
+    // Закрытие при клике вне дропдауна
+    document.addEventListener('click', (e) => {
+        if (dropdown.style.display === 'block' &&
+            !dropdown.contains(e.target) &&
+            e.target !== addBtn) {
+            closeDropdown();
+        }
+    });
+</script>
 
 {% endblock %}

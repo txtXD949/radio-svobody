@@ -26,10 +26,11 @@ class RadioPlayer {
     }
 
     loadTrack(track) {
+        if (!track) return;
+
         this.currentTrack = track;
         this.audio.src = `/api/tracks/${track.id}/stream`;
         this.trackNameEl.textContent = track.title;
-        this.trackImageEl.style.backgroundImage = `url(${track.cover_url || '/static/images/default-cover.png'})`;
 
         if (this.isPlaying) {
             this.audio.play();
@@ -50,12 +51,31 @@ class RadioPlayer {
         this.updatePlayIcons(this.currentTrack.id);
     }
 
-    next() {
-        // p
+    prev() {
+        console.log('prev вызван, playlist.length:', this.playlist.length);
+
+        if (!this.playlist.length) return;
+
+        // Если прошло больше 5 секунд — перемотка в начало текущего трека
+        if (this.audio.currentTime > 5) {
+            this.audio.currentTime = 0;
+            return;
+        }
+
+        // Иначе предыдущий трек
+        this.currentIndex = (this.currentIndex - 1 + this.playlist.length) % this.playlist.length;
+        this.loadTrack(this.playlist[this.currentIndex]);
+        if (!this.isPlaying) this.play();
     }
 
-    prev() {
-        // p
+    next() {
+        console.log('next вызван, playlist.length:', this.playlist.length);
+
+        if (!this.playlist.length) return;
+
+        this.currentIndex = (this.currentIndex + 1) % this.playlist.length;
+        this.loadTrack(this.playlist[this.currentIndex]);
+        if (!this.isPlaying) this.play();
     }
 
     play() {
@@ -71,9 +91,12 @@ class RadioPlayer {
     }
 
     setPlaylist(tracks, startIndex = 0) {
+        console.log('setPlaylist вызван, треков:', tracks.length);
         this.playlist = tracks;
         this.currentIndex = startIndex;
-        this.loadTrack(this.playlist[startIndex]);
+        if (tracks.length) {
+            this.loadTrack(tracks[startIndex]);
+        }
     }
 
     playSingleTrack(track) {
