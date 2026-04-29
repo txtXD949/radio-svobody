@@ -56,10 +56,6 @@
                     <div class="track-title">${escapeHtml(t.title)}</div>
                     <div class="track-artist">${escapeHtml(t.artist)}</div>
                 </div>
-                <div class="track-likes">
-                    <div class="heart-icon"></div>
-                    <span>${t.likes_count}</span>
-                </div>
                 <button class="remove-track-btn" onclick="removeTrack(${t.track_id})">✕</button>
             </div>
         `).join('');

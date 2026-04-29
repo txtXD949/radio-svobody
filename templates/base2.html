@@ -37,7 +37,7 @@
 <div class="offcanvas offcanvas-top" tabindex="-1" id="mainDrawer" style="height: 300px;">
     <div class="offcanvas-header border-bottom">
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
-        <a href="/" style="font-weight: bold; color: white; text-decoration: none;">Радио Свободы</a>
+        <a href="/" style="font-weight: bold; color: var(--text); text-decoration: none;">Радио Свободы</a>
     </div>
     <div class="offcanvas-body">
         <nav class="drawer-nav">
@@ -186,6 +186,28 @@
             !dropdown.contains(e.target) &&
             e.target !== addBtn) {
             closeDropdown();
+        }
+    });
+
+    // Смена темы
+    const themeToggle = document.querySelector('.theme-toggle');
+
+    // Загрузка сохранённой темы
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+    }
+
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('light-theme');
+
+        // Сохраняем выбор
+        if (document.body.classList.contains('light-theme')) {
+            localStorage.setItem('theme', 'light');
+            themeToggle.style.backgroundColor == '#000';
+        } else {
+            localStorage.setItem('theme', 'dark');
+            themeToggle.style.backgroundColor == '#FFF';
         }
     });
 </script>

@@ -5,8 +5,20 @@
     --border: #2B2B2B;
     --primary: #484AD5;
     --primary-hover: #5a5ce0;
-    --text: #FFFFFF;
+    --text: #FFF;
     --text-secondary: #A0A0A0;
+}
+
+/* Светлая тема */
+body.light-theme {
+    --background: #F5F5F5;
+    --surface: #FFFFFF;
+    --border: #E0E0E0;
+    --text: #1A1A1A;
+    --text-secondary: #666666;
+    --primary: #484AD5;
+    --primary-hover: #5a5ce0;
+    --hero-text-shadow: #D0D0D0;
 }
 
 /* Тело */
@@ -109,6 +121,10 @@ a:hover {
     filter: invert(1);
 }
 
+body.light-theme .offcanvas .btn-close {
+    filter: invert(0);
+}
+
 .offcanvas::-webkit-scrollbar {
     display: none;
 }
@@ -182,7 +198,7 @@ a:hover {
     background: none;
     border: none;
     font-size: 32px;
-    color: white;
+    color: var(--text);
     cursor: pointer;
     flex-shrink: 0;
 }
@@ -195,12 +211,18 @@ a:hover {
 }
 
 .theme-toggle {
-    background: white;
-    border: none;
+    background: var(--text);
+    border: 1px solid var(--border);
     width: 20px;
     height: 20px;
     border-radius: 50%;
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+body.light-theme .theme-toggle {
+    background: var(--border);
+    border: none;
 }
 
 .avatar {
@@ -241,7 +263,7 @@ a:hover {
 .menu-icon span {
     display: block;
     height: 4px;
-    background: white;
+    background: var(--text);
     border-radius: 16px;
     width: 100%;
 }
@@ -274,7 +296,7 @@ a:hover {
 }
 
 .footer-links a {
-    color: white;
+    color: var(--text);
     text-decoration: none;
     font-size: 14px;
     transition: all 0.2s;
@@ -383,8 +405,8 @@ a:hover {
 
 .player-fav {
     background: none;
-    border: 2px solid white;
-    color: white;
+    border: 2px solid var(--text);
+    color: var(--text);
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -398,7 +420,7 @@ a:hover {
 }
 
 .player-fav:hover {
-    background: white;
+    background: var(--text);
     color: var(--surface);
 }
 
@@ -633,7 +655,7 @@ a:hover {
     height: 0;
     border-style: solid;
     border-width: 12px 0 12px 20px;
-    border-color: transparent transparent transparent black;
+    border-color: transparent transparent transparent var(--background);
     margin-left: 5px;
 }
 

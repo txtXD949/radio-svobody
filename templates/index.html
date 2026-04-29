@@ -4,8 +4,9 @@
 
 <div class="hero-section d-flex flex-column justify-content-center align-items-center" style="min-height: 80vh;">
     <h1 class="hero-title"
-        style="font-size: 120px; font-weight: 900; text-align: center; color: #0D0D0D; text-shadow: 7px 0 0 #2B2B2B, -7px 0 0 #2B2B2B, 0 7px 0 #2B2B2B, 0 -7px 0 #2B2B2B;">
-        РАДИО СВОБОДЫ</h1>
+        style="font-size: 120px; font-weight: 900; text-align: center; color: var(--surface); text-shadow: 7px 0 0 var(--border), -7px 0 0 var(--border), 0 7px 0 var(--border), 0 -7px 0 var(--border);">
+        РАДИО СВОБОДЫ
+    </h1>
     <div class="hero-buttons" style="display: flex; gap: 300px; margin-top: 150px;">
         <a href="/editor" class="btn btn-primary"
            style="width: 302px; height: 102px; display: inline-flex; align-items: center; justify-content: center; font-size: 24px;">СОЗДАТЬ</a>
@@ -198,6 +199,30 @@
         }
         updateTracks();
     });
+
+    function updateThemeImages() {
+        const isLightTheme = document.body.classList.contains('light-theme');
+
+        const topImage1 = document.querySelector('.top-box:first-child .vertical-image img');
+        const topImage2 = document.querySelector('.top-box:last-child .vertical-image img');
+
+        if (topImage1) {
+            topImage1.src = isLightTheme ? '/static/imgs/kitten3.png' : '/static/imgs/kitten1.png';
+        }
+        if (topImage2) {
+            topImage2.src = isLightTheme ? '/static/imgs/kitten4.png' : '/static/imgs/kitten2.png';
+        }
+    }
+
+    // Следим за изменением темы
+    const observer = new MutationObserver(() => {
+        updateThemeImages();
+    });
+
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    // Вызываем при загрузке
+    updateThemeImages();
 </script>
 
 {% endblock %}
