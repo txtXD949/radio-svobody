@@ -10,47 +10,46 @@ class ApiKeyResource(Resource):
     def post(self):
         check_admin_key()
         args = api_key_parser.parse_args()
-        db_sess = db_session.create_session()
 
-        api_key = ApiKey(
-            key=ApiKey.generate_key(),
-            name=args['name']
-        )
+        with db_session.create_session() as db_sess:
+            api_key = ApiKey(
+                key=ApiKey.generate_key(),
+                name=args['name']
+            )
+            db_sess.add(api_key)
+            db_sess.commit()
 
-        db_sess.add(api_key)
-        db_sess.commit()
-
-        return jsonify({
-            'api_key': api_key.key,
-            'name': api_key.name,
-            'message': 'API key created'
-        }), 201
+            return jsonify({
+                'api_key': api_key.key,
+                'name': api_key.name,
+                'message': 'API key created'
+            }), 201
 
     def get(self):
         check_admin_key()
-        db_sess = db_session.create_session()
-        keys = db_sess.query(ApiKey).all()
 
-        return jsonify({
-            'api_keys': [{
-                'id': k.id,
-                'name': k.name,
-                'created_at': str(k.created_at),
-                'is_active': k.is_active
-            } for k in keys]
-        })
+        with db_session.create_session() as db_sess:
+            keys = db_sess.query(ApiKey).all()
 
+            return jsonify({
+                'api_keys': [{
+                    'id': k.id,
+                    'name': k.name,
+                    'created_at': str(k.created_at),
+                    'is_active': k.is_active
+                } for k in keys]
+            })
 
 class ApiKeyDetailResource(Resource):
     def delete(self, key_id):
         check_admin_key()
-        db_sess = db_session.create_session()
 
-        key = db_sess.query(ApiKey).get(key_id)
-        if not key:
-            abort(404, message=f'API key {key_id} not found')
+        with db_session.create_session() as db_sess:
+            key = db_sess.query(ApiKey).get(key_id)
+            if not key:
+                abort(404, message=f'API key {key_id} not found')
 
-        key.is_active = False
-        db_sess.commit()
+            key.is_active = False
+            db_sess.commit()
 
-        return jsonify({'success': 'OK', 'message': 'API key deactivated'})
+            return jsonify({'success': 'OK', 'message': 'API key deactivated'})
