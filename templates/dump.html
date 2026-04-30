@@ -72,8 +72,10 @@
         const response = await fetch(`/api/tracks/${currentTrackId}/like`, {
             method: 'POST',
             headers: {
+                'Content-Type': 'application/json',
                 'X-API-Key': '{{ api_key }}'
-            }
+            },
+            body: JSON.stringify({ user_id: {{ current_user.id }} })
         });
         const data = await response.json();
         currentLikes = data.likes_count;

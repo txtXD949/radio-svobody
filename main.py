@@ -4,6 +4,7 @@ from werkzeug.exceptions import HTTPException
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 
 from dotenv import load_dotenv
 import os
@@ -83,8 +84,8 @@ def handle_http_exception(e):
 
 @login_manager.user_loader
 def load_user(user_id):
-    db_sess = db_session.create_session()
-    return db_sess.get(User, user_id)
+    with db_session.create_session() as db_sess:
+        return db_sess.get(User, user_id)
 
 
 # обработчики
@@ -92,11 +93,11 @@ def load_user(user_id):
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.email == form.email.data).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember_me.data)
-            return redirect('/')
+        with db_session.create_session() as db_sess:
+            user = db_sess.query(User).filter(User.email == form.email.data).first()
+            if user and user.check_password(form.password.data):
+                login_user(user, remember=form.remember_me.data)
+                return redirect('/')
         return render_template('login.html', message='Неверный логин или пароль', form=form, title='Авторизация')
     return render_template('login.html', form=form, title='Авторизация')
 
@@ -114,21 +115,21 @@ def register():
     if form.validate_on_submit():
         if form.password.data != form.repeat_password.data:
             return render_template('register.html', message='Пароли не совпадают', form=form, title='Регистрация')
-        if form.password.data.__len__() < 8:
+        if len(form.password.data) < 8:
             return render_template('register.html', message='Пароль должен быть минимум 8 символов', form=form,
                                    title='Регистрация')
 
-        db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.email == form.email.data).first():
-            return render_template('register.html', message='Этот email занят', form=form, title='Регистрация')
+        with db_session.create_session() as db_sess:
+            if db_sess.query(User).filter(User.email == form.email.data).first():
+                return render_template('register.html', message='Этот email занят', form=form, title='Регистрация')
 
-        user = User()
-        user.username = form.username.data
-        user.email = form.email.data
-        user.set_password(form.password.data)
+            user = User()
+            user.username = form.username.data
+            user.email = form.email.data
+            user.set_password(form.password.data)
 
-        db_sess.add(user)
-        db_sess.commit()
+            db_sess.add(user)
+            db_sess.commit()
 
         send_conf_email(user.email, user.username)
 
@@ -143,14 +144,12 @@ def confirm_token(token):
     if not email:
         return render_template('message.html', message='Ссылка недействительна или истекла')
 
-    db_sess = db_session.create_session()
-    user = db_sess.query(User).filter(User.email == email).first()
-
-    if user.confirmed:
-        return render_template('message.html', message='Email уже подтверждён')
-
-    user.confirmed = True
-    db_sess.commit()
+    with db_session.create_session() as db_sess:
+        user = db_sess.query(User).filter(User.email == email).first()
+        if user.confirmed:
+            return render_template('message.html', message='Email уже подтверждён')
+        user.confirmed = True
+        db_sess.commit()
 
     return render_template('message.html', message='Email подтверждён! Спасибо.')
 
@@ -162,53 +161,45 @@ def confirm_wait():
 
 @app.route('/')
 def index():
-    db_sess = db_session.create_session()
-
-    # топ треков
-    top_tracks = db_sess.query(Track).order_by(Track.likes_count.desc()).limit(5).all()
-
-    # топ исполнителей
-    top_artists = top_artists = db_sess.query(User, func.sum(Track.likes_count).label('total_likes')
-                                              ).join(Track, User.id == Track.users_id).group_by(User.id).order_by(
-        func.sum(Track.likes_count).desc()).limit(5).all()
+    with db_session.create_session() as db_sess:
+        top_tracks = db_sess.query(Track).options(joinedload(Track.user)).order_by(Track.likes_count.desc()).limit(
+            5).all()
+        top_artists = db_sess.query(User, func.sum(Track.likes_count).label('total_likes')
+                                    ).join(Track, User.id == Track.users_id).group_by(User.id).order_by(
+            func.sum(Track.likes_count).desc()).limit(5).all()
 
     return render_template('index.html', top_tracks=top_tracks, top_artists=top_artists, title='Радио Свободы',
                            api_key=os.getenv('ADMIN_API_KEY'))
 
 
 @app.route('/dump')
+@login_required
 def dump():
-    db_sess = db_session.create_session()
-
-    dump_track = db_sess.query(Track).join(Dump, Track.id == Dump.track_id).first()
-    return render_template('dump.html', track=dump_track, title='Свалка', api_key=os.getenv('ADMIN_API_KEY'))
-
+    with db_session.create_session() as db_sess:
+        dump_track = db_sess.query(Track).join(Dump, Track.id == Dump.track_id).first()
+    return render_template('dump.html', track=dump_track, title='Свалка',
+                           api_key=os.getenv('ADMIN_API_KEY'))
 
 @app.route('/api/dump/random')
 def api_dump_random():
-    db_sess = db_session.create_session()
-
-    dump_tracks = db_sess.query(Track).join(Dump, Track.id == Dump.track_id).all()
-
-    print(f"Найдено треков в свалке: {len(dump_tracks)}")
-
-    if not dump_tracks:
-        return jsonify({'track': None})
-
-    random_track = choice(dump_tracks)
-
-    return jsonify({
-        'track': {
-            'id': random_track.id,
-            'likes_count': random_track.likes_count
-        }
-    })
+    with db_session.create_session() as db_sess:
+        dump_tracks = db_sess.query(Track).join(Dump, Track.id == Dump.track_id).all()
+        print(f"Найдено треков в свалке: {len(dump_tracks)}")
+        if not dump_tracks:
+            return jsonify({'track': None})
+        random_track = choice(dump_tracks)
+        return jsonify({
+            'track': {
+                'id': random_track.id,
+                'likes_count': random_track.likes_count
+            }
+        })
 
 
 @app.route('/editor')
 @login_required
 def editor():
-    return render_template('editor.html', title='Создать трек')
+    return render_template('editor.html', title='Создать трек', api_key=os.getenv('ADMIN_API_KEY'))
 
 
 @app.route('/upload-track', methods=['GET', 'POST'])
@@ -216,9 +207,9 @@ def editor():
 def update_track():
     form = TrackForm()
 
-    db_sess = db_session.create_session()
-    genres = db_sess.query(Genre).all()
-    form.genre_id.choices = [(g.id, g.title) for g in genres]
+    with db_session.create_session() as db_sess:
+        genres = db_sess.query(Genre).all()
+        form.genre_id.choices = [(g.id, g.title) for g in genres]
 
     if form.validate_on_submit():
         audio = form.audio_file.data
@@ -231,39 +222,38 @@ def update_track():
         filepath = f'uploads/snds/{filename}'
         audio.save(filepath)
 
-        track = Track(
-            title=form.title.data,
-            file_path=filepath,
-            users_id=current_user.id,
-            genre_id=form.genre_id.data,
-            subgenres=form.subgenres.data
-        )
-        db_sess.add(track)
-        db_sess.commit()
+        with db_session.create_session() as db_sess:
+            track = Track(
+                title=form.title.data,
+                file_path=filepath,
+                users_id=current_user.id,
+                genre_id=form.genre_id.data,
+                subgenres=form.subgenres.data
+            )
+            db_sess.add(track)
+            db_sess.commit()
 
-        dump = Dump(track_id=track.id)
-        db_sess.add(dump)
-        db_sess.commit()
+            dump = Dump(track_id=track.id)
+            db_sess.add(dump)
+            db_sess.commit()
 
         return redirect('/dump')
-    return render_template('upload.html', form=form, title='Загрузить трек')
+    return render_template('upload.html', form=form, title='Загрузить трек', api_key=os.getenv('ADMIN_API_KEY'))
 
 
 @app.route('/about')
 def about():
-    return render_template('about.html', title='О нас')
+    return render_template('about.html', title='О нас', api_key=os.getenv('ADMIN_API_KEY'))
 
 
 @app.route('/api/tracks/<int:track_id>/stream')
 def stream_tracks(track_id):
-    db_sess = db_session.create_session()
-    track = db_sess.get(Track, track_id)
-    if not track:
-        return '', 404
-    return send_from_directory(
-        os.path.dirname(track.file_path),
-        os.path.basename(track.file_path)
-    )
+    with db_session.create_session() as db_sess:
+        track = db_sess.get(Track, track_id)
+        if not track:
+            return '', 404
+        file_path = track.file_path
+    return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path))
 
 
 @app.route('/search')
@@ -272,23 +262,18 @@ def search():
     if not query:
         return redirect('/')
 
-    db_sess = db_session.create_session()
+    with db_session.create_session() as db_sess:
+        tracks = db_sess.query(Track).options(joinedload(Track.user)).filter(
+            Track.title.ilike(f'%{query}%')
+        ).order_by(Track.likes_count.desc()).all()
 
-    tracks = db_sess.query(Track).filter(Track.title.ilike(f'%{query}%')).order_by(Track.likes_count.desc()).all()
+        artists = db_sess.query(
+            User, func.coalesce(func.sum(Track.likes_count), 0).label('total_likes')
+        ).outerjoin(Track, User.id == Track.users_id).filter(
+            User.username.ilike(f'%{query}%')
+        ).group_by(User.id).order_by(func.sum(Track.likes_count).desc()).all()
 
-    artists = db_sess.query(
-        User, func.coalesce(func.sum(Track.likes_count), 0).label('total_likes')
-    ).outerjoin(Track, User.id == Track.users_id).filter(
-        User.username.ilike(f'%{query}%')
-    ).group_by(User.id).order_by(func.sum(Track.likes_count).desc()).all()
-
-    return render_template(
-        'search.html',
-        query=query,
-        tracks=tracks,
-        artists=artists,
-        title=f'Поиск: {query}'
-    )
+    return render_template('search.html', query=query, tracks=tracks, artists=artists, title=f'Поиск: {query}', api_key=os.getenv('ADMIN_API_KEY'))
 
 
 @app.route('/playlists')
@@ -303,48 +288,49 @@ def create_playlist():
     form = PlaylistForm()
 
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        playlist = Playlist(
-            user_id=current_user.id,
-            title=form.title.data
-        )
-        db_sess.add(playlist)
-        db_sess.commit()
+        with db_session.create_session() as db_sess:
+            playlist = Playlist(
+                user_id=current_user.id,
+                title=form.title.data
+            )
+            db_sess.add(playlist)
+            db_sess.commit()
         return redirect('/playlists')
 
-    return render_template('create_playlist.html', title='Новый плейлист', form=form, api_key=os.getenv('ADMIN_API_KEY'))
+    return render_template('create_playlist.html', title='Новый плейлист', form=form,
+                           api_key=os.getenv('ADMIN_API_KEY'))
 
 
 @app.route('/playlist/<int:playlist_id>')
 @login_required
 def playlist_page(playlist_id):
-    db_sess = db_session.create_session()
-    playlist = db_sess.query(Playlist).filter(
-        Playlist.id == playlist_id,
-        Playlist.user_id == current_user.id
-    ).first()
-
-    if not playlist:
-        abort(404)
+    with db_session.create_session() as db_sess:
+        playlist = db_sess.query(Playlist).filter(
+            Playlist.id == playlist_id,
+            Playlist.user_id == current_user.id
+        ).first()
+        if not playlist:
+            abort(404)
+        playlist_title = playlist.title
 
     return render_template('playlist_detail.html',
                            playlist_id=playlist_id,
-                           playlist_title=playlist.title,
-                           title=playlist.title,
+                           playlist_title=playlist_title,
+                           title=playlist_title,
                            api_key=os.getenv('ADMIN_API_KEY'))
+
 
 if __name__ == '__main__':
     db_session.global_init('db/rs.db')
 
-    # session = db_session.create_session()
-    # if not session.query(ApiKey).first():
-    #     admin_key = ApiKey(
-    #         key=ApiKey.generate_key(),
-    #         name='Admin Key'
-    #     )
-    #     session.add(admin_key)
-    #     session.commit()
-    #     print(f'ADMIN API KEY: {admin_key.key}')
-    # session.close()
+    # with db_session.create_session() as session:
+    #     if not session.query(ApiKey).first():
+    #         admin_key = ApiKey(
+    #             key=ApiKey.generate_key(),
+    #             name='Admin Key'
+    #         )
+    #         session.add(admin_key)
+    #         session.commit()
+    #         print(f'ADMIN API KEY: {admin_key.key}')
 
     app.run(host='127.0.0.1', port=5000)

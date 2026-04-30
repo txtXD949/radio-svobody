@@ -86,10 +86,15 @@ class TrackListResource(Resource):
 
 
 class TrackLikeResource(Resource):
-    @jwt_required()
     def post(self, track_id):
+        check_api_key()
+        data = request.get_json()
+        user_id = data.get('user_id')
+
+        if not user_id:
+            return {'message': 'user_id required'}, 400
+
         with db_session.create_session() as db_sess:
-            user_id = get_jwt_identity()
             ex_like = db_sess.query(Like).filter(Like.track_id == track_id, Like.user_id == user_id).first()
             track = db_sess.get(Track, track_id)
 
