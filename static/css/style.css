@@ -425,13 +425,290 @@ body.light-theme .theme-toggle {
 }
 
 /* Адаптив */
-@media (max-width: 768px) {
-    .mini-player {
+@media (max-width: 1024px) {
+    .container {
+        padding: 0 40px;
+    }
+
+    .main-content {
+        padding: 20px 40px;
+    }
+
+    .top-bar {
+        gap: 20px;
         padding: 12px 20px;
     }
 
+    .right-group {
+        margin-right: 0;
+    }
+
+    .hero-title {
+        font-size: 80px !important;
+    }
+
+    .hero-buttons {
+        gap: 40px !important;
+    }
+
+    .hero-buttons .btn-primary {
+        width: 200px !important;
+        height: 70px !important;
+        font-size: 18px !important;
+    }
+
+    .footer {
+        padding: 40px 40px 80px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 20px;
+    }
+
+    .main-content {
+        padding: 20px 20px;
+        margin-top: 70px;
+    }
+
+    .top-bar {
+        gap: 10px;
+        padding: 8px 16px;
+    }
+
+    .menu-btn {
+        font-size: 24px;
+    }
+
+    .search-form {
+        margin: 0 10px;
+    }
+
+    .search-input {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .right-group {
+        gap: 8px;
+    }
+
+    .theme-toggle {
+        width: 30px;
+        height: 30px;
+    }
+
+    .avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .hero-title {
+        font-size: 48px !important;
+    }
+
+    .hero-buttons {
+        gap: 20px !important;
+        margin-top: 50px !important;
+    }
+
+    .hero-buttons .btn-primary {
+        width: 160px !important;
+        height: 55px !important;
+        font-size: 14px !important;
+    }
+
+    .top-label {
+        font-size: 24px;
+    }
+
+    .top-box {
+        padding: 16px;
+    }
+
+    .top-box-title {
+        font-size: 16px;
+    }
+
+    .top-row {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .top-left, .top-right {
+        width: 100%;
+    }
+
+    .vertical-image {
+        height: 200px;
+    }
+
+    .top-items-list {
+        gap: 15px;
+    }
+
+    .top-item {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .track-card {
+        width: 100%;
+    }
+
+    .track-title, .track-artist {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+
+    .item-rank {
+        font-size: 18px;
+        width: 30px;
+    }
+
+    .item-likes {
+        gap: 8px;
+    }
+
+    .likes-count {
+        font-size: 14px;
+    }
+
+    .play-circle {
+        width: 40px;
+        height: 40px;
+    }
+
+    .play-triangle {
+        border-width: 8px 0 8px 14px;
+    }
+
+    .artist-card {
+        flex: 1;
+    }
+
+    .artist-avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    .artist-name {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    /* Свалка */
+    .dump-track-card {
+        gap: 15px;
+        padding: 15px 25px;
+    }
+
+    /* Плеер */
+    .mini-player {
+        padding: 8px 16px;
+    }
+
+    .player-content {
+        gap: 10px;
+    }
+
+    .player-image {
+        width: 36px;
+        height: 36px;
+    }
+
     .player-track-name {
-        max-width: 150px;
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+
+    .player-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+    }
+
+    .player-fav {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+    }
+
+    /* Футер */
+    .footer-container {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .footer-links {
+        align-items: center;
+    }
+
+    .footer-social {
+        justify-content: center;
+    }
+
+    /* Плейлисты */
+    .playlist-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .playlist-actions {
+        margin-top: 10px;
+    }
+
+    .playlist-track-item {
+        flex-wrap: wrap;
+    }
+
+    .track-order-controls {
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    /* Дропдаун */
+    .playlist-dropdown {
+        right: 20px;
+        bottom: 80px;
+        width: 220px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 32px !important;
+    }
+
+    .hero-buttons .btn-primary {
+        width: 130px !important;
+        height: 45px !important;
+        font-size: 12px !important;
+    }
+
+    .top-label {
+        font-size: 18px;
+    }
+
+    .genre-btn {
+        font-size: 12px;
+        padding: 6px 16px;
+    }
+
+    .auth-card {
+        padding: 20px;
+        margin: 20px;
+    }
+
+    .auth-card h1 {
+        font-size: 24px;
+    }
+
+    .container {
+        padding: 0 15px;
     }
 }
 
