@@ -33,6 +33,7 @@ from resources import (
 from utils.forms import LoginForm, RegisterForm, TrackForm, PlaylistForm
 from utils.mail_utils import send_conf_email, conf_token
 from utils.mail_init import mail
+from utils.scheduler import start_scheduler
 
 load_dotenv()
 
@@ -252,6 +253,10 @@ def stream_tracks(track_id):
         track = db_sess.get(Track, track_id)
         if not track:
             return '', 404
+
+        track.views_count = (track.views_count or 0) + 1
+        db_sess.commit()
+
         file_path = track.file_path
     return send_from_directory(os.path.dirname(file_path), os.path.basename(file_path))
 
@@ -322,6 +327,7 @@ def playlist_page(playlist_id):
 
 if __name__ == '__main__':
     db_session.global_init('db/rs.db')
+    start_scheduler()
 
     # with db_session.create_session() as session:
     #     if not session.query(ApiKey).first():
