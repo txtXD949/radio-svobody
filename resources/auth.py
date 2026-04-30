@@ -10,17 +10,16 @@ def check_api_key():
     if not api_key:
         abort(401, message='API key required')
 
-    db_sess = db_session.create_session()
-    key_obj = db_sess.query(ApiKey).filter(
-        ApiKey.key == api_key,
-        ApiKey.is_active == True
-    ).first()
-    db_sess.close()
+    with db_session.create_session() as db_sess:
+        key_obj = db_sess.query(ApiKey).filter(
+            ApiKey.key == api_key,
+            ApiKey.is_active == True
+        ).first()
 
-    if not key_obj:
-        abort(401, message='Invalid API key')
+        if not key_obj:
+            abort(401, message='Invalid API key')
 
-    return key_obj
+        return key_obj
 
 
 def check_admin_key():
