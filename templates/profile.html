@@ -29,7 +29,8 @@
 
         <h1>{{ artist_name }}</h1>
 
-        <span class="avatar" style="width: 350px; height: 350px; font-size: 128px">{{ current_user.username[0]|upper }}</span>
+        <span class="avatar"
+              style="width: 350px; height: 350px; font-size: 128px">{{ current_user.username[0]|upper }}</span>
     </div>
 </div>
 
@@ -37,60 +38,84 @@
     <span class="top-label">ТРЕКИ</span>
 </div>
 
-<div class="top-box">
-        <div class="top-box-content">
-            <div class="top-row">
-                <div class="top-left">
-                    <div class="top-items-list-double">
-                        {% for i in range( steps ) %}
-                        <div class="top-item">
-                            {% if i < tracks|length %}
-                            <div class="track-card">
-                                <div class="track-play" data-id="{{ tracks[i].id }}">
-                                    <div class="play-circle">
-                                        <div class="play-triangle"></div>
-                                    </div>
-                                </div>
-                                <div class="track-info">
-                                    <div class="track-title">{{ tracks[i].title }}</div>
-                                    <div class="track-artist">{{ tracks[i].user.username }}</div>
+<div class="top-box" style="min-height: 100%">
+    <div class="top-box-content">
+        <div class="top-row">
+            <div class="top-left">
+                <div class="top-items-list-double">
+                    {% for i in range( steps ) %}
+                    <div class="top-item">
+                        {% if i < tracks|length %}
+                        <div class="track-card">
+                            <div class="track-play" data-id="{{ tracks[i].id }}">
+                                <div class="play-circle">
+                                    <div class="play-triangle"></div>
                                 </div>
                             </div>
-                            <div class="item-likes">
-                                <div class="heart-icon"></div>
-                                <span class="likes-count">{{ tracks[i].likes_count }}</span>
+                            <div class="track-info">
+                                <div class="track-title">{{ tracks[i].title }}</div>
+                                <div class="track-artist">{{ tracks[i].user.username }}</div>
                             </div>
-                            {% else %}
-                            <div class="track-card empty">
-                                <div class="track-play">
-                                    <div class="play-circle"></div>
-                                </div>
-                                <div class="track-info">
-                                    <div class="track-title empty"></div>
-                                    <div class="track-artist empty"></div>
-                                </div>
-                            </div>
-                            <div class="item-likes">
-                                <div class="heart-icon"></div>
-                                <span class="likes-count">0</span>
-                            </div>
-                            {% endif %}
                         </div>
-                        {% endfor %}
-
-                        {% if tracks|length == 0 %}
-                            <div class="profile-container-statistics">
-                                <p style="padding-top: 40px">Пока не проявил себя :(</p>
+                        <div class="item-likes">
+                            <div class="heart-icon"></div>
+                            <span class="likes-count">{{ tracks[i].likes_count }}</span>
+                        </div>
+                        {% else %}
+                        <div class="track-card empty">
+                            <div class="track-play">
+                                <div class="play-circle"></div>
                             </div>
+                            <div class="track-info">
+                                <div class="track-title empty"></div>
+                                <div class="track-artist empty"></div>
+                            </div>
+                        </div>
+                        <div class="item-likes">
+                            <div class="heart-icon"></div>
+                            <span class="likes-count">0</span>
+                        </div>
                         {% endif %}
                     </div>
+                    {% endfor %}
+                </div>
+                {% if tracks|length == 0 %}
+                <div class="profile-container-statistics">
+                    <p style="padding-top: 40px; color: var(--text)">Пока не проявил себя :(</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="top-divider">
+    <span class="top-label">ПЛЕЙЛИСТЫ</span>
+</div>
+
+<div class="top-box" style="min-height: 100%">
+    <div class="top-box-content">
+        <div class="top-row">
+            <div class="top-left">
+                <div class="top-items-list-double">
+                    {% for i in range( playlists|length ) %}
+                    <a href="/playlists">
+                        <div class="playlist-card" data-id="{{ playlists[i].id }}">
+                            <div class="playlist-info">
+                                <div class="playlist-title">{{ playlists[i].title }}</div>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                    {% if tracks|length == 0 %}
+                    <div class="profile-container-statistics">
+                        <p style="padding-top: 40px; color: var(--text)">Тут пустовато...</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
-
-<div class="top-divider">
-    <span class="top-label">ПЛЕЙЛИСТЫ</span>
 </div>
 
 <script>

@@ -299,6 +299,7 @@ def profile():
     db_sess = db_session.create_session()
     artist_name = db_sess.query(User).get(user_id).username
     tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
+    playlists = db_sess.query(Playlist).filter(Playlist.user_id == user_id).all()
 
     tracks_count = len(tracks)
 
@@ -318,7 +319,9 @@ def profile():
         steps=steps,
         tracks_count=tracks_count,
         likes_count=likes_count,
-        views_count=views_count
+        views_count=views_count,
+        playlists=playlists,
+        api_key=os.getenv('ADMIN_API_KEY')
     )
 
 @app.route('/playlists')
@@ -366,6 +369,8 @@ def playlist_page(playlist_id):
 if __name__ == '__main__':
     if "uploads" not in os.listdir():
         os.mkdir("uploads")
+        os.mkdir("uploads/snds")
+        os.mkdir("uploads/imgs")
     db_session.global_init('db/rs.db')
 
     # session = db_session.create_session()
