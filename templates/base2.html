@@ -28,7 +28,9 @@
     <button class="theme-toggle"></button>
 
     {% if current_user.is_authenticated %}
-        <span class="avatar">{{ current_user.username[0]|upper }}</span>
+        <a href="/profile">
+            <span class="avatar">{{ current_user.username[0]|upper }}</span>
+        </a>
     {% else %}
         <a href="/login" class="login-link">Войти</a>
     {% endif %}
