@@ -5,21 +5,25 @@ from data.tracks import Track
 
 
 def update_intop_count():
+    """Увеличивает intop_count для треков в топе (один раз в день)"""
     with db_session.create_session() as db_sess:
-        # Берём топ-10 по лайкам за последние 7 дней
         week_ago = datetime.datetime.now() - datetime.timedelta(days=7)
         top_tracks = db_sess.query(Track).filter(
             Track.created_at >= week_ago
         ).order_by(Track.likes_count.desc()).limit(10).all()
 
-        # Увеличиваем счётчик для каждого трека в топе
+        today = datetime.datetime.now().date()
         for track in top_tracks:
-            track.intop_count = (track.intop_count or 0) + 1
+            # Проверяем, обновляли ли сегодня
+            if track.last_intop_update != today:
+                track.intop_count = (track.intop_count or 0) + 1
+                track.last_intop_update = today
 
         db_sess.commit()
 
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(func=update_intop_count, trigger='interval', hours=1)
+    # Запускаем раз в неделю (в воскресенье)
+    scheduler.add_job(func=update_intop_count, trigger='cron', day_of_week='sun', hour=0, minute=0)
     scheduler.start()
