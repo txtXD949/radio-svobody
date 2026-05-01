@@ -222,6 +222,23 @@ def generate_test_data():
     print(f'Треков в плейлистах: {playlist_track_count}')
 
 
+def load_genres():
+    with open('assets/txts/genres.txt') as genres_file:
+        genres = list(map(str.strip, genres_file.readlines()))
+
+    db_sess = db_session.create_session()
+    for g in genres:
+        genre = Genre()
+        genre.title = g.lower()
+
+        db_sess.add(genre)
+    db_sess.commit()
+
+    print('Все жанры добавлены')
+
+
 if __name__ == '__main__':
     create_audio_placeholder()
     generate_test_data()
+
+    # load_genres()

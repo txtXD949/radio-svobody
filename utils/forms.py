@@ -27,7 +27,7 @@ class TrackForm(FlaskForm):
         FileAllowed(['mp3', 'wav', 'ogg'], 'Аудиофайлы MP3')
     ])
     genre_id = SelectField('Жанр', coerce=int, validators=[DataRequired()])
-    subgenres = StringField('Поджанры (через запятую)')
+    subgenres = StringField('Поджанры (через запятую без пробелов)')
     submit = SubmitField('КИНУТЬ В СВАЛКУ')
 
 
