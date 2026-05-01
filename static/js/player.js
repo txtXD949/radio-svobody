@@ -19,44 +19,46 @@ class RadioPlayer {
     }
 
     initEventListeners() {
-        this.playBtn.addEventListener('click', () => this.togglePlay());
-        this.prevBtn.addEventListener('click', () => this.prev());
-        this.nextBtn.addEventListener('click', () => this.next());
+        this.playBtn.addEventListener('click', () => this.togglePlay());    // при клике на play/pause → вызываем togglePlay
+        this.prevBtn.addEventListener('click', () => this.prev());          // при клике на "предыдущий" → вызываем prev
+        this.nextBtn.addEventListener('click', () => this.next());          // при клике на "следующий" → вызываем next
         this.audio.addEventListener('ended', () => this.next());            // автопереключение
     }
 
     loadTrack(track) {
-        if (!track) return;
+        if (!track) return;                                     // если трека нет — ничего не делаем
 
-        this.currentTrack = track;
+        this.currentTrack = track;                              // сохраняем текущий трек
         this.audio.src = `/api/tracks/${track.id}/stream`;      // потоковое аудио
-        this.trackNameEl.textContent = track.title;
+        this.trackNameEl.textContent = track.title;             // обновляем название на экране
 
         this.updatePlayIcons(track.id);                         // синхронизация иконок
 
-        if (this.isPlaying) {
+        if (this.isPlaying) {                                   // если плеер был в состоянии воспроизведения — продолжаем играть
             this.audio.play();
         }
     }
 
     togglePlay() {
-        if (!this.currentTrack) return;
+        if (!this.currentTrack) return;             // если нет трека
 
-        if (this.isPlaying) {
+        if (this.isPlaying) {                       // если играет → ставим на паузу
             this.audio.pause();
-            this.playBtn.textContent = '▶';
+            this.playBtn.textContent = '▶';         // меняем иконку на "play"
         } else {
-            this.audio.play();
-            this.playBtn.textContent = '⏸';
+            this.audio.play();                      // если на паузе → запускаем
+            this.playBtn.textContent = '⏸';         // меняем иконку на "pause"
         }
-        this.isPlaying = !this.isPlaying;
+        this.isPlaying = !this.isPlaying;           // переключаем флаг
+
+        // обновляем иконки
         this.updatePlayIcons(this.currentTrack.id);
     }
 
     prev() {  // предыдущий трек
         console.log('prev вызван, playlist.length:', this.playlist.length);
 
-        if (!this.playlist.length) return;
+        if (!this.playlist.length) return;  // если нет плейлиста
 
         // Если прошло больше 5 секунд — перемотка в начало текущего трека
         if (this.audio.currentTime > 5) {
@@ -66,15 +68,16 @@ class RadioPlayer {
 
         // Иначе предыдущий трек
         this.currentIndex = (this.currentIndex - 1 + this.playlist.length) % this.playlist.length;
-        this.loadTrack(this.playlist[this.currentIndex]);
-        if (!this.isPlaying) this.play();
+        this.loadTrack(this.playlist[this.currentIndex]);  // загружаем предыдущий трек
+        if (!this.isPlaying) this.play();  // если был на паузе — запускаем
     }
 
     next() {  // следующий трек
         console.log('next вызван, playlist.length:', this.playlist.length);
 
-        if (!this.playlist.length) return;
+        if (!this.playlist.length) return;  // если нет трека
 
+        // переключаемся на следующий трек
         this.currentIndex = (this.currentIndex + 1) % this.playlist.length;
         this.loadTrack(this.playlist[this.currentIndex]);
         if (!this.isPlaying) this.play();
@@ -93,15 +96,15 @@ class RadioPlayer {
     stop() {  // остановка воспроизведения
         this.isPlaying = false;
         this.playBtn.textContent = '▶';
-        this.updatePlayIcons(null);
+        this.updatePlayIcons(null);  // null — убираем подсветку всех треугольников
     }
 
     setPlaylist(tracks, startIndex = 0) {  // устанавливает плейлист (последовательное воспроизведение)
         console.log('setPlaylist вызван, треков:', tracks.length);
-        this.playlist = tracks;
-        this.currentIndex = startIndex;
+        this.playlist = tracks;                     // сохраняем массив треков
+        this.currentIndex = startIndex;             // с какого трека начать
         if (tracks.length) {
-            this.loadTrack(tracks[startIndex]);
+            this.loadTrack(tracks[startIndex]);     // загружаем первый/выбранный трек
         }
     }
 
@@ -109,21 +112,23 @@ class RadioPlayer {
         this.currentTrack = track;
         this.audio.src = `/api/tracks/${track.id}/stream`;
         this.trackNameEl.textContent = track.title;
-        this.play();
-        this.updatePlayIcons(track.id);
+        this.play();                        // запускаем
+        this.updatePlayIcons(track.id);     // синхронизируем иконки
     }
 
     updatePlayIcons(activeTrackId) {  // синхронизация треугольничков в плашке трека
+        // находим все кнопки с классом .track-play
         document.querySelectorAll('.track-play').forEach(btn => {
-            const trackId = btn.getAttribute('data-id');
-            const triangle = btn.querySelector('.play-triangle');
+            const trackId = btn.getAttribute('data-id');            // id трека для этой кнопки
+            const triangle = btn.querySelector('.play-triangle');   // сам треугольник
 
             if (!triangle) return;
 
+            // если передан activeTrackId, он совпадает с trackId и музыка играет — скрываем треугольник
             if (activeTrackId && trackId == activeTrackId && this.isPlaying) {
-                triangle.style.opacity = '0';
+                triangle.style.opacity = '0';   // невидимый треугольник
             } else {
-                triangle.style.opacity = '1';
+                triangle.style.opacity = '1';   // видимый треугольник
             }
         });
     }
