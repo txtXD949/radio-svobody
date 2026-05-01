@@ -181,6 +181,7 @@ def dump():
     return render_template('dump.html', track=dump_track, title='Свалка',
                            api_key=os.getenv('ADMIN_API_KEY'))
 
+
 @app.route('/api/dump/random')
 def api_dump_random():
     with db_session.create_session() as db_sess:
@@ -268,17 +269,77 @@ def search():
         return redirect('/')
 
     with db_session.create_session() as db_sess:
+        # поиск по трекам
         tracks = db_sess.query(Track).options(joinedload(Track.user)).filter(
             Track.title.ilike(f'%{query}%')
         ).order_by(Track.likes_count.desc()).all()
 
+        # поиск по пользователям
         artists = db_sess.query(
             User, func.coalesce(func.sum(Track.likes_count), 0).label('total_likes')
         ).outerjoin(Track, User.id == Track.users_id).filter(
             User.username.ilike(f'%{query}%')
         ).group_by(User.id).order_by(func.sum(Track.likes_count).desc()).all()
 
-    return render_template('search.html', query=query, tracks=tracks, artists=artists, title=f'Поиск: {query}', api_key=os.getenv('ADMIN_API_KEY'))
+        # поиск по жанрам
+        genres = db_sess.query(Genre).filter(Genre.title.ilike(f'%{query}%')).all()
+
+        # поиск по поджанрам
+        subgenres = set()
+        all_tracks = db_sess.query(Track).all()
+        for track in all_tracks:
+            if track.subgenres:
+                for sg in track.subgenres.split(','):
+                    if query.lower() in sg.lower():
+                        subgenres.add(sg.strip())
+        subgenres = sorted(subgenres)
+
+    return render_template(
+        'search.html',
+        query=query,
+        tracks=tracks,
+        artists=artists,
+        genres=genres,
+        subgenres=subgenres,
+        title=f'Поиск: {query}',
+        api_key=os.getenv('ADMIN_API_KEY')
+    )
+
+
+@app.route('/genre/<int:genre_id>')
+def genre_page(genre_id):
+    with db_session.create_session() as db_sess:
+        genre = db_sess.query(Genre).get(genre_id)
+        if not genre:
+            abort(404)
+
+        tracks = db_sess.query(Track).options(joinedload(Track.user)).filter(
+            Track.genre_id == genre_id
+        ).order_by(Track.likes_count.desc()).all()
+
+    return render_template(
+        'genre_result.html',
+        genre=genre,
+        tracks=tracks,
+        title=f'Жанр: {genre.title}',
+        api_key=os.getenv('ADMIN_API_KEY')
+    )
+
+
+@app.route('/subgenre/<string:subgenre_name>')
+def subgenre_page(subgenre_name):
+    with db_session.create_session() as db_sess:
+        tracks = db_sess.query(Track).options(joinedload(Track.user)).filter(
+            Track.subgenres.ilike(f'%{subgenre_name}%')
+        ).order_by(Track.likes_count.desc()).all()
+
+    return render_template(
+        'subgenre_result.html',
+        subgenre_name=subgenre_name,
+        tracks=tracks,
+        title=f'Поджанр: {subgenre_name}',
+        api_key=os.getenv('ADMIN_API_KEY')
+    )
 
 
 @app.route('/playlists')

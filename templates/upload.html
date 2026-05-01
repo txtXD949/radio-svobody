@@ -13,22 +13,22 @@
                         {{ form.title.label }}
                         {{ form.title(class="form-control") }}
                     </div>
-                    
+
                     <div class="mb-3">
                         {{ form.genre_id.label }}
                         {{ form.genre_id(class="form-control") }}
                     </div>
-                    
+
                     <div class="mb-3">
                         {{ form.subgenres.label }}
                         {{ form.subgenres(class="form-control") }}
                     </div>
-                    
+
                     <div class="mb-3">
                         {{ form.audio_file.label }}
                         {{ form.audio_file(class="form-control", accept=".mp3,.wav,.ogg") }}
                     </div>
-                    
+
                     {{ form.submit(class="btn btn-primary w-100") }}
                 </form>
             </div>

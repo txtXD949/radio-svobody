@@ -1100,6 +1100,47 @@ body.light-theme .theme-toggle {
     border-color: var(--primary);
 }
 
+/* Якорь в поиске */
+.search-nav {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+.search-nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+
+.search-nav a:hover {
+    color: var(--primary);
+}
+
+/* Жанры в поиске */
+.genres-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.genre-link {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 40px;
+    padding: 8px 20px;
+    color: var(--text);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.genre-link:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
 /* Плейлисты */
 .playlists-grid {
     display: flex;

@@ -1,0 +1,65 @@
+{% extends "base2.html" %}
+
+{% block main %}
+<div class="container py-5">
+    <h1 class="mb-4">Жанр: {{ genre.title }}</h1>
+
+    <div class="top-box">
+        <div class="top-box-content">
+            <div class="top-items-list">
+                {% for track in tracks %}
+                <div class="top-item">
+                    <div class="track-card w-100">
+                        <div class="track-play" data-id="{{ track.id }}">
+                            <div class="play-circle">
+                                <div class="play-triangle"></div>
+                            </div>
+                        </div>
+                        <div class="track-info flex-grow-1">
+                            <div class="track-title">{{ track.title }}</div>
+                            <div class="track-artist">{{ track.user.username }}</div>
+                        </div>
+                        <div class="item-likes">
+                            <div class="heart-icon"></div>
+                            <span class="likes-count">{{ track.likes_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 text-center">
+        <a href="/search" class="btn btn-outline-primary">← Новый поиск</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const genrePlaylist = [
+            {% for track in tracks %}
+            { id: {{ track.id }}, title: '{{ track.title|replace("'", "\\'") }}', cover_url: null },
+            {% endfor %}
+        ];
+
+        console.log('Плейлист жанра:', genrePlaylist.length);
+        console.log('player доступен?', typeof player !== 'undefined');
+
+        if (typeof player !== 'undefined' && genrePlaylist.length) {
+            player.setPlaylist(genrePlaylist, 0);
+        }
+
+        document.querySelectorAll('.track-play').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const trackId = btn.getAttribute('data-id');
+                const index = genrePlaylist.findIndex(t => t.id == trackId);
+                if (index !== -1 && typeof player !== 'undefined') {
+                    player.setPlaylist(genrePlaylist, index);
+                    player.play();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

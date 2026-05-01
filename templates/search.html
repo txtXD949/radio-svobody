@@ -4,12 +4,19 @@
 <div class="container py-5">
     <h1 class="mb-4">Результаты поиска: <span class="text-primary">{{ query }}</span></h1>
 
-    {% if not tracks and not artists %}
+    {% if not tracks and not artists and not genres and not subgenres %}
     <p class="text-secondary">Ничего не найдено</p>
     {% endif %}
 
+    <div class="search-nav">
+        {% if users %}<a href="#users">Пользователи</a>{% endif %}
+        {% if tracks %}<a href="#tracks">Треки</a>{% endif %}
+        {% if genres %}<a href="#genres">Жанры</a>{% endif %}
+        {% if subgenres %}<a href="#subgenres">Поджанры</a>{% endif %}
+    </div>
+
     {% if tracks %}
-    <div class="top-box mb-5">
+    <div id="tracks" class="top-box mb-5">
         <div class="top-box-title">ТРЕКИ</div>
         <div class="top-box-content">
             <div class="top-items-list">
@@ -38,7 +45,7 @@
     {% endif %}
 
     {% if artists %}
-    <div class="top-box">
+    <div id="users" class="top-box">
         <div class="top-box-title">ИСПОЛНИТЕЛИ</div>
         <div class="top-box-content">
             <div class="top-items-list">
@@ -53,6 +60,32 @@
                         <span class="likes-count">{{ total_likes }}</span>
                     </div>
                 </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if genres %}
+    <div id="genres" class="top-box mb-4">
+        <div class="top-box-title">ЖАНРЫ</div>
+        <div class="top-box-content">
+            <div class="genres-list">
+                {% for genre in genres %}
+                <a href="/genre/{{ genre.id }}" class="genre-link">{{ genre.title }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if subgenres %}
+    <div id="subgenres" class="top-box mb-4">
+        <div class="top-box-title">ПОДЖАНРЫ</div>
+        <div class="top-box-content">
+            <div class="genres-list">
+                {% for sg in subgenres %}
+                <a href="/subgenre/{{ sg }}" class="genre-link">{{ sg }}</a>
                 {% endfor %}
             </div>
         </div>

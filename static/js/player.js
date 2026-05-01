@@ -32,6 +32,8 @@ class RadioPlayer {
         this.audio.src = `/api/tracks/${track.id}/stream`;
         this.trackNameEl.textContent = track.title;
 
+        this.updatePlayIcons(track.id);
+
         if (this.isPlaying) {
             this.audio.play();
         }
@@ -82,6 +84,10 @@ class RadioPlayer {
         this.audio.play();
         this.isPlaying = true;
         this.playBtn.textContent = '⏸';
+
+        if (this.currentTrack) {
+            this.updatePlayIcons(this.currentTrack.id);
+        }
     }
 
     stop() {
