@@ -2,6 +2,7 @@
 
 {% block main %}
 
+<!-- основное (что встречает пользователя) -->
 <div class="hero-section d-flex flex-column justify-content-center align-items-center" style="min-height: 80vh;">
     <h1 class="hero-title"
         style="font-size: 120px; font-weight: 900; text-align: center; color: var(--surface); text-shadow: 7px 0 0 var(--border), -7px 0 0 var(--border), 0 7px 0 var(--border), 0 -7px 0 var(--border);">
@@ -16,16 +17,18 @@
     </div>
 </div>
 
+<!-- разделитель "ТОПЫ" с полосками -->
 <div class="top-divider">
     <span class="top-label">ТОПЫ</span>
 </div>
 
+<!-- кнопка переключения жанров (фильтр только для треков) -->
 <div class="genres-section">
     <button class="genre-btn" id="genreToggle">ЖАНР: ВСЕ</button>
 </div>
 
 <div class="tops-container">
-    <!-- Топ треков -->
+    <!-- блок "топ треков" -->
     <div class="top-box">
         <div class="top-box-title">ТОП ТРЕКОВ</div>
         <div class="top-box-content">
@@ -52,6 +55,7 @@
                                 <span class="likes-count">{{ top_tracks[i].likes_count }}</span>
                             </div>
                             {% else %}
+                            <!-- пустая строка топ треков -->
                             <div class="track-card empty">
                                 <div class="track-play">
                                     <div class="play-circle"></div>
@@ -70,6 +74,7 @@
                         {% endfor %}
                     </div>
                 </div>
+                <!-- картинка (меняется при смене темы) -->
                 <div class="top-right">
                     <div class="vertical-image">
                         <img src="/static/imgs/kitten1.png" alt="top image">
@@ -79,7 +84,7 @@
         </div>
     </div>
 
-    <!-- Топ исполнителей -->
+    <!-- блок "топ исполнителей" -->
     <div class="top-box">
         <div class="top-box-title">ТОП ИСПОЛНИТЕЛЕЙ</div>
         <div class="top-box-content">
@@ -123,6 +128,7 @@
 </div>
 
 <script>
+    // обработчики кнопок воспроизведения треков
     document.querySelectorAll('.track-play').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const trackId = btn.getAttribute('data-id');
@@ -139,9 +145,11 @@
         });
     });
 
+    // переключение жанров (циклически)
     let currentGenreId = 0;
     const genreBtn = document.getElementById('genreToggle');
 
+    // обновление списка треков при смене жанра
     async function updateTracks() {
         const response = await fetch(`/api/tracks?genre_id=${currentGenreId}`, {
             headers: { 'X-API-Key': '{{ api_key }}' }
@@ -159,7 +167,7 @@
 
             if (i < tracksList.length && tracksList[i]) {
                 const t = tracksList[i];
-                // Заполняем данными
+                // заполняем данными
                 trackTitle.textContent = t.title || '';
                 trackArtist.textContent = t.user?.username || t.artist || '';
                 likesSpan.textContent = t.likes_count || 0;
@@ -169,12 +177,12 @@
                 trackTitle.classList.remove('empty');
                 trackArtist.classList.remove('empty');
             } else {
-                // Делаем пустым и серым
+                // пустая заглушка
                 trackTitle.textContent = '';
                 trackArtist.textContent = '';
                 likesSpan.textContent = '0';
                 playBtn?.setAttribute('data-id', '');
-                // Добавляем пустой класс
+                // добавляем пустой класс
                 trackCard.classList.add('empty');
                 trackTitle.classList.add('empty');
                 trackArtist.classList.add('empty');
@@ -182,6 +190,7 @@
         }
     }
 
+    // клик по кнопке "жанр"
     genreBtn.addEventListener('click', async () => {
         const response = await fetch('/api/genres', {
             headers: { 'X-API-Key': '{{ api_key }}' }
@@ -189,7 +198,7 @@
         const data = await response.json();
         const genres = data.genres;
 
-        currentGenreId = (currentGenreId + 1) % (genres.length + 1);
+        currentGenreId = (currentGenreId + 1) % (genres.length + 1);  // 0 = "все", дальше id жанров
 
         if (currentGenreId === 0) {
             genreBtn.textContent = 'ЖАНР: ВСЕ';
@@ -197,9 +206,10 @@
             const genre = genres[currentGenreId - 1];
             genreBtn.textContent = `ЖАНР: ${genre.title}`;
         }
-        updateTracks();
+        updateTracks();  // обновляем топ треков
     });
 
+    // смена картинок при переключении темы
     function updateThemeImages() {
         const isLightTheme = document.body.classList.contains('light-theme');
 
@@ -214,15 +224,14 @@
         }
     }
 
-    // Следим за изменением темы
+    // следим за изменением темы
     const observer = new MutationObserver(() => {
         updateThemeImages();
     });
 
     observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
-    // Вызываем при загрузке
-    updateThemeImages();
+    updateThemeImages();  // при загрузке
 </script>
 
 {% endblock %}

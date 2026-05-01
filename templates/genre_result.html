@@ -10,6 +10,7 @@
                 {% for track in tracks %}
                 <div class="top-item">
                     <div class="track-card w-100">
+                        <!-- кнопка воспроизведения -->
                         <div class="track-play" data-id="{{ track.id }}">
                             <div class="play-circle">
                                 <div class="play-triangle"></div>
@@ -30,6 +31,7 @@
         </div>
     </div>
 
+    <!-- кнопка возврата к поиску -->
     <div class="mt-4 text-center">
         <a href="/search" class="btn btn-outline-primary">← Новый поиск</a>
     </div>
@@ -37,6 +39,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // формируем плейлист из всех треков жанра
         const genrePlaylist = [
             {% for track in tracks %}
             { id: {{ track.id }}, title: '{{ track.title|replace("'", "\\'") }}', cover_url: null },
@@ -47,9 +50,10 @@
         console.log('player доступен?', typeof player !== 'undefined');
 
         if (typeof player !== 'undefined' && genrePlaylist.length) {
-            player.setPlaylist(genrePlaylist, 0);
+            player.setPlaylist(genrePlaylist, 0);  // загружаем плейлист (без автозапуска)
         }
 
+        // клик по треугольнику
         document.querySelectorAll('.track-play').forEach(btn => {
             btn.addEventListener('click', () => {
                 const trackId = btn.getAttribute('data-id');
