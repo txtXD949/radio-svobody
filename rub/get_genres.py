@@ -44,7 +44,7 @@ GENRES = ['acoustic', 'afrobeat', 'alt-rock', 'alternative', 'ambient', 'america
           'techno-punk', 'tex-mex', 'third-wave-ska', 'thrash-metal', 'trallpunk', 'trap-latino', 'trap-music',
           'tribal-house', 'trumpet-jazz', 'turkish-hip-hop', 'turkish-rock', 'twee-pop', 'uk-hip-hop', 'uk-post-punk',
           'uk-rap', 'uk-soul', 'vaporwave', 'viking-metal', 'vocal-jazz', 'vocaloid', 'west-coast-hip-hop',
-          'west-coast-rap', 'zouk', 'other']
+          'west-coast-rap', 'zouk', 'other']  # список музыкальных жанров
 
 AUDIO_GENRES = [
     "podcast", "interview", "lecture", "audiobook", "speech", "talk show",
@@ -58,10 +58,11 @@ AUDIO_GENRES = [
     "white noise", "binaural beats", "soundscape", "acoustic ecology",
     "voice note", "audio diary", "vlog audio", "rehearsal", "demo",
     "q&a", "roundtable", "debate", "press conference", "town hall"
-]
+]  # список НЕ музыкальных жанров
 
 
 def write_file_genres():
+    """Запись всех жанров в файл genres.txt"""
     with open('../assets/txts/genres.txt', 'w', encoding='utf-8') as f:
         for g in GENRES + AUDIO_GENRES:
             print(g.lower(), file=f)
