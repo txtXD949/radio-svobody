@@ -6,7 +6,7 @@ from data.playlists import Playlist
 from data.playlist_tracks import PlaylistTrack
 from data.tracks import Track
 from .auth import check_api_key
-from .playlist_parser import playlist_parser, playlist_track_parser, playlist_reorder_parser
+from .playlist_parser import playlist_parser, playlist_reorder_parser
 
 
 class PlaylistListResource(Resource):

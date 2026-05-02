@@ -1,13 +1,10 @@
 from flask_restful import Resource, abort
 from flask import jsonify, request
-from flask_login import current_user, login_required
 from data import db_session
 from data.tracks import Track
 from data.likes import Like
-from data.api_key import ApiKey
 from .track_parser import track_parser
 from .auth import check_api_key
-from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
 def not_found_track(track_id):
