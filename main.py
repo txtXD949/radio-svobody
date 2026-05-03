@@ -210,7 +210,7 @@ def index():
         'index.html',
         top_tracks=top_tracks,
         top_artists=top_artists,
-        title='Радио Свободы',
+        title='REZISTORKA',
         api_key=APIKEY
     )
 
@@ -547,6 +547,9 @@ def playlist_page(playlist_id):
 
 
 if __name__ == '__main__':
+    if "db" not in os.listdir():
+        os.mkdir("db")
+
     db_session.global_init('db/rs.db')  # инициализируем бд
     start_scheduler()  # запуск планировщика для обновления Track.intop-count
 
@@ -557,5 +560,10 @@ if __name__ == '__main__':
     with db_session.create_session() as session:
         if not session.query(ApiKey).first():  # проверка, что ключ один
             create_apikey('ADMIN')
+
+    if "uploads" not in os.listdir():
+        os.mkdir("uploads")
+        os.mkdir("uploads/snds")
+        os.mkdir("uploads/imgs")
 
     app.run(host='127.0.0.1', port=5000)  # запуск сервера
