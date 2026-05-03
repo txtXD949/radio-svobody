@@ -1,7 +1,20 @@
 {% extends "base1.html" %}
 
 {% block header %}
+<!-- выпадающее окно для добавления трека в плейлист -->
+<div id="playlistDropdown" class="playlist-dropdown" style="display: none;">
+    <div class="playlist-dropdown-header">
+        <span>Добавить в плейлист</span>
+        <button class="close-dropdown">✕</button>
+    </div>
+    <div class="playlist-dropdown-list" id="playlistDropdownList">
+        <div class="loading">Загрузка...</div>
+    </div>
+</div>
+
+<!-- верхняя панель (шапка) -->
 <div class="top-bar">
+    <!-- кнопка открытия шторки (три полоски) -->
     <button class="custom-menu-btn" id="menuToggle" type="button"
             data-bs-toggle="offcanvas" data-bs-target="#mainDrawer">
         <div class="menu-icon">
@@ -11,23 +24,29 @@
         </div>
     </button>
 
+    <!-- форма поиска -->
     <form action="/search" method="get" class="search-form">
         <input type="text" name="q" class="search-input" placeholder="Поиск..." value="{{ request.args.get('q', '') }}">
     </form>
 
+    <!-- кнопка смены темы (светлая/тёмная) -->
     <button class="theme-toggle"></button>
 
+     <!-- аватар/ссылка на вход -->
     {% if current_user.is_authenticated %}
-        <span class="avatar">{{ current_user.username[0]|upper }}</span>
+        <a href="/profile">
+            <span class="avatar">{{ current_user.username[0]|upper }}</span>
+        </a>
     {% else %}
         <a href="/login" class="login-link">Войти</a>
     {% endif %}
 </div>
 
+<!-- шторка (выезжающее меню) -->
 <div class="offcanvas offcanvas-top" tabindex="-1" id="mainDrawer" style="height: 300px;">
     <div class="offcanvas-header border-bottom">
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
-        <a href="/" style="font-weight: bold; color: white; text-decoration: none;">Радио Свободы</a>
+        <a href="/" style="font-weight: bold; color: var(--text); text-decoration: none;">REZISTORKA</a>
     </div>
     <div class="offcanvas-body">
         <nav class="drawer-nav">
@@ -40,11 +59,13 @@
 
 {% endblock %}
 
+<!-- основной контент -->
 {% block content %}
 <div class="main-content">
     {% block main %}{% endblock %}
 </div>
 
+<!-- мини-плеер (фиксируется внизу) -->
 <div class="mini-player" id="miniPlayer">
     <div class="player-content">
         <div class="player-left">
@@ -59,11 +80,12 @@
         </div>
 
         <div class="player-right">
-            <button class="player-fav">+</button>
+            <button class="player-fav" id="addToPlaylistBtn">+</button>
         </div>
     </div>
 </div>
 
+<!-- футер -->
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-links">
@@ -77,5 +99,137 @@
         </div>
     </div>
 </footer>
+
+<script>
+    // ПЛЕЙЛИСТ
+    // элементы
+    const addBtn = document.getElementById('addToPlaylistBtn');
+    const dropdown = document.getElementById('playlistDropdown');
+    const dropdownList = document.getElementById('playlistDropdownList');
+    const closeDropdownBtn = document.querySelector('.close-dropdown');
+
+    let currentTrackForPlaylist = null;
+
+    // загрузка плейлистов
+    async function loadPlaylistsForDropdown() {
+        // показываем "Загрузка..." во время запроса
+        dropdownList.innerHTML = '<div class="playlist-dropdown-loading">Загрузка...</div>';
+
+        // запрашиваем с сервера список плейлистов текущего пользователя
+        const response = await fetch('/api/playlists', {
+            headers: { 'X-API-Key': '{{ api_key }}' }
+        });
+        const playlists = await response.json();
+
+        // если плейлистов нет — показываем сообщение и ссылку на создание
+        if (!playlists.length) {
+            dropdownList.innerHTML = '<div class="playlist-dropdown-empty">Нет плейлистов<br><a href="/playlists/create">Создать</a></div>';
+            return;
+        }
+
+        // если плейлисты есть — создаём HTML для каждого
+        dropdownList.innerHTML = playlists.map(p => `
+            <div class="playlist-dropdown-item" data-playlist-id="${p.id}" data-playlist-title="${escapeHTML(p.title)}">
+                <span class="playlist-dropdown-item-title">${escapeHTML(p.title)}</span>
+                <span class="playlist-dropdown-item-add">+</span>
+            </div>
+        `).join(''); // .join('') соединяет все элементы в одну строку
+
+        // добавляем обработчики
+        document.querySelectorAll('.playlist-dropdown-item').forEach(item => {
+            item.addEventListener('click', async (e) => {
+                const playlistId = item.dataset.playlistId;  // берём id из data-playlist-id
+                if (currentTrackForPlaylist) {
+                    await addTrackToPlaylist(playlistId, currentTrackForPlaylist.id);
+                }
+                dropdown.style.display = 'none';  // закрываем дропдаун после добавления
+            });
+        });
+    }
+
+    // добавление трека в плейлист
+    async function addTrackToPlaylist(playlistId, trackId) {
+        // отправляем POST-запрос на сервер
+        const response = await fetch(`/api/playlists/${playlistId}/tracks`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': '{{ api_key }}'
+            },
+            body: JSON.stringify({ track_id: trackId })
+        });
+
+        if (response.ok) {
+            // Можно показать временное уведомление
+            console.log('Трек добавлен в плейлист');
+        } else {
+            const error = await response.json();
+            alert(error.message || 'Ошибка при добавлении');
+        }
+    }
+
+    function escapeHTML(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // открытие дропдауна
+    addBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+
+        // проверяем, есть ли в плеере активный трек
+        if (!player.currentTrack) {
+            alert('Нет активного трека');
+            return;
+        }
+
+        // сохраняем текущий трек в переменную
+        currentTrackForPlaylist = player.currentTrack;
+
+        // загружаем плейлисты и показываем дропдаун
+        await loadPlaylistsForDropdown();
+        dropdown.style.display = 'block';
+    });
+
+    // закрытие дропдауна
+    function closeDropdown() {
+        dropdown.style.display = 'none';  // показываем выпадающее окно
+    }
+
+    closeDropdownBtn.addEventListener('click', closeDropdown);  // закрытие по крестику
+
+    // закрытие при клике вне дропдауна
+    document.addEventListener('click', (e) => {
+        if (dropdown.style.display === 'block' &&   // если окно открыто
+            !dropdown.contains(e.target) &&         // кликнули НЕ внутри окна
+            e.target !== addBtn) {                  // и НЕ по кнопке "+"
+            closeDropdown();
+        }
+    });
+
+    // ТЕМА
+    const themeToggle = document.querySelector('.theme-toggle');  // кнопка смены темы
+
+    // загрузка сохранённой темы
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');  // добавляем класс для светлой темы
+    }
+
+    // при клике на кнопку — переключаем тему
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('light-theme');  // добавляет/убирает класс light-theme
+
+        // сохраняем выбор
+        if (document.body.classList.contains('light-theme')) {
+            localStorage.setItem('theme', 'light');
+            themeToggle.style.backgroundColor == '#000';
+        } else {
+            localStorage.setItem('theme', 'dark');
+            themeToggle.style.backgroundColor == '#FFF';
+        }
+    });
+</script>
 
 {% endblock %}

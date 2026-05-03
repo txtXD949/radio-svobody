@@ -1,0 +1,78 @@
+{% extends "base2.html" %}
+
+{% block main %}
+<div class="container py-5">
+    <!-- заголовок и кнопка создания -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Мои плейлисты</h1>
+        <a href="/playlists/create" class="btn btn-primary">+ Создать</a>
+    </div>
+
+    <!-- контейнер для списка плейлистов -->
+    <div class="playlist-grid" id="playlistList">
+        <div class="text-center py-5 text-secondary">Загрузка...</div>
+    </div>
+</div>
+
+<script>
+    // загрузка списка плейлистов с сервера
+    async function loadPlaylist() {
+        const response = await fetch('/api/playlists', {
+            headers: { 'X-API-Key': '{{ api_key }}' }
+        });
+        const data = await response.json();
+
+        const container = document.getElementById('playlistList');
+
+        // проверка, что пришёл массив
+        if (!Array.isArray(data)) {
+            container.innerHTML = '<div class="text-center py-5 text-danger">Ошибка загрузки плейлистов</div>';
+            return;
+        }
+
+        // если плейлистов нет
+        if (data.length === 0) {
+            container.innerHTML = '<div class="text-center py-5 text-secondary">У вас пока нет плейлистов</div>';
+            return;
+        }
+
+        // отрисовка каждого плейлиста
+        container.innerHTML = data.map(p => `
+            <div class="playlist-card" data-id="${p.id}" onclick="viewPlaylist(${p.id})">
+                <div class="playlist-info">
+                    <div class="playlist-title">${escapeHTML(p.title)}</div>
+                    <div class="playlist-date">Создан: ${new Date(p.created_at).toLocaleDateString()}</div>
+                </div>
+                <div class="playlist-actions">
+                    <button class="btn btn-sm btn-outline-danger" onclick="deletePlaylist(${p.id})">✕</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // защита от xss
+    function escapeHTML(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // переход на страницу плейлиста
+    function viewPlaylist(id) {
+        window.location.href = `/playlist/${id}`;
+    }
+
+    // удаление плейлиста
+    async function deletePlaylist(id) {
+        if (!confirm('Удалить плейлист?')) return;
+
+        await fetch(`/api/playlists/${id}`, {
+            method: 'DELETE',
+            headers: { 'X-API-Key': '{{ api_key }}' }
+        });
+        loadPlaylist();  // обновляем список после удаления
+    }
+
+    loadPlaylist();
+</script>
+{% endblock %}

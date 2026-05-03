@@ -2,6 +2,7 @@
 
 {% block main %}
 <div class="container py-5">
+    <!-- заголовок страницы -->
     <div class="text-center mb-5">
         <h1 class="offcanvas-title" style="font-size: 54px !important;">СВАЛКА</h1>
     </div>
@@ -11,23 +12,26 @@
         <!-- Плашка трека (скрыта по умолчанию) -->
         <div class="dump-track-card" id="trackCard" style="display: none;">
             <div class="track-play" data-id="{{ currentTrackId }}">
+                <!-- кнопка воспроизведения (треугольник) -->
                 <div class="play-circle">
                     <div class="play-triangle"></div>
                 </div>
             </div>
+            <!-- кнопка лайка -->
             <div class="dump-like-btn" id="likeBtn">
                 <div class="heart-icon"></div>
                 <span id="likesCount">0</span>
             </div>
         </div>
 
-        <!-- Картинка мусорки -->
+        <!-- картинка мусорки -->
         <div class="trash-bin" id="trashBin">
             <img src="/static/imgs/trash-icon.png" alt="мусорка" class="trash-image">
             <p class="offcanvas-title" style="font-size: 32px;">ЖМИ НА МЕНЯ!</p>
         </div>
     </div>
 
+    <!-- просто декоративный элемент -->
     <div>
         <h1 class="text-center offcanvas-title" style="margin-top: 600px; font-size: 32px;">Тут пусто</h1>
     </div>
@@ -35,6 +39,7 @@
 </div>
 
 <script>
+    // dom-элементы
     const trashBin = document.getElementById('trashBin');
     const trackCard = document.getElementById('trackCard');
     const likesCountSpan = document.getElementById('likesCount');
@@ -43,6 +48,7 @@
     let currentTrackId = null;
     let currentLikes = 0;
 
+    // загрузить случайный трек из свалки
     async function loadRandomTrack() {
         const response = await fetch('/api/dump/random', {
             headers: {
@@ -60,26 +66,30 @@
 
             currentLikes = data.track.likes_count;
             likesCountSpan.textContent = currentLikes;
-            trackCard.style.display = 'flex';
+            trackCard.style.display = 'flex';   // показываем плашку
         } else {
             trackCard.style.display = 'none';
         }
     }
 
+    // поставить/убрать лайк
     async function likeTrack() {
         if (!currentTrackId) return;
 
         const response = await fetch(`/api/tracks/${currentTrackId}/like`, {
             method: 'POST',
             headers: {
+                'Content-Type': 'application/json',
                 'X-API-Key': '{{ api_key }}'
-            }
+            },
+            body: JSON.stringify({ user_id: {{ current_user.id }} })  // передаём id текущего пользователя
         });
         const data = await response.json();
         currentLikes = data.likes_count;
         likesCountSpan.textContent = currentLikes;
     }
 
+    // обработчики кликов
     trashBin.addEventListener('click', () => {
         loadRandomTrack();
     });
@@ -88,6 +98,7 @@
         likeTrack();
     });
 
+    // воспроизведение трека
     const playTrackBtn = document.querySelector('.track-play');
     if (playTrackBtn) {
         playTrackBtn.addEventListener('click', () => {

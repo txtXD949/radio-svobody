@@ -1,0 +1,125 @@
+{% extends "base2.html" %}
+
+{% block main %}
+<div class="container py-5">
+    <!-- заголовок и кнопка удаления всего плейлиста -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ playlist_title }}</h1>
+        <button class="btn btn-outline-danger" id="deletePlaylistBtn">Удалить плейлист</button>
+    </div>
+
+    <!-- контейнер для списка треков в плейлисте -->
+    <div class="playlist-tracks" id="tracksList">
+        <div class="text-center py-5 text-secondary">Загрузка...</div>
+    </div>
+</div>
+
+<script>
+    const playlistId = {{ playlist_id }};
+
+    // загрузка треков плейлиста с сервера
+    async function loadTracks() {
+        const response = await fetch(`/api/playlists/${playlistId}/tracks`, {
+            headers: { 'X-API-Key': '{{ api_key }}' }
+        });
+        const tracks = await response.json();
+
+        // формируем плейлист для плеера
+        const playerTracks = tracks.map(t => ({
+            id: t.track_id,
+            title: t.title,
+            cover_url: null
+        }));
+
+        // если есть треки — загружаем в плеер
+        if (playerTracks.length) {
+            player.setPlaylist(playerTracks, 0);
+        }
+
+        const container = document.getElementById('tracksList');
+
+        if (tracks.length === 0) {
+            container.innerHTML = '<div class="text-center py-5 text-secondary">В плейлисте нет треков</div>';
+            return;
+        }
+
+        // отрисовка каждого трека с элементами управления
+        container.innerHTML = tracks.map(t => `
+            <div class="playlist-track-item" data-track-id="${t.track_id}">
+                <div class="track-order-controls">
+                    <button class="order-btn up" onclick="moveTrack(${t.track_id}, 'up')">▲</button>
+                    <span class="track-order">${t.order + 1}</span>
+                    <button class="order-btn down" onclick="moveTrack(${t.track_id}, 'down')">▼</button>
+                </div>
+                <div class="track-play-btn" onclick="playTrack(${t.track_id}, '${escapeHtml(t.title)}')">
+                    <div class="play-circle small">
+                        <div class="play-triangle"></div>
+                    </div>
+                </div>
+                <div class="track-info flex-grow-1">
+                    <div class="track-title">${escapeHtml(t.title)}</div>
+                    <div class="track-artist">${escapeHtml(t.artist)}</div>
+                </div>
+                <button class="remove-track-btn" onclick="removeTrack(${t.track_id})">✕</button>
+            </div>
+        `).join('');
+    }
+
+    // защита от xss
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // воспроизведение одного трека
+    function playTrack(trackId, title) {
+        player.playSingleTrack({
+            id: trackId,
+            title: title,
+            cover_url: null
+        });
+    }
+
+    // изменение порядка трека (вверх/вниз)
+    async function moveTrack(trackId, direction) {
+        await fetch(`/api/playlists/${playlistId}/tracks/${trackId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': '{{ api_key }}'
+            },
+            body: JSON.stringify({ direction: direction })
+        });
+        loadTracks();  // обновляем список после изменения порядка
+    }
+
+    // удаление трека из плейлиста
+    async function removeTrack(trackId) {
+        if (!confirm('Удалить трек из плейлиста?')) return;
+
+        await fetch(`/api/playlists/${playlistId}/tracks/${trackId}`, {
+            method: 'DELETE',
+            headers: { 'X-API-Key': '{{ api_key }}' }
+        });
+        loadTracks();  // обновляем список после удаления
+    }
+
+    // удаление всего плейлиста
+    document.getElementById('deletePlaylistBtn').addEventListener('click', async () => {
+        if (!confirm('Удалить весь плейлист? Все треки будут удалены из него.')) return;
+
+        const response = await fetch(`/api/playlists/${playlistId}`, {
+            method: 'DELETE',
+            headers: { 'X-API-Key': '{{ api_key }}' }
+        });
+
+        if (response.ok) {
+            window.location.href = '/playlists';  // возврат к списку плейлистов
+        }
+    });
+
+    loadTracks();  // начальная загрузка
+</script>
+
+{% endblock %}

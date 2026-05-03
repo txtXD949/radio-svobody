@@ -1,0 +1,32 @@
+{% extends "base2.html" %}
+
+{% block main %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="auth-card">
+                <h1 class="text-center mb-4">Создать плейлист</h1>
+
+                <form action="" method="post">
+                    {{ form.hidden_tag() }}
+
+                    <!-- поле ввода названия плейлиста -->
+                    <div class="mb-3">
+                        {{ form.title.label }}
+                        {{ form.title(class="form-control") }}
+                        {% for error in form.title.errors %}
+                            <div class="alert alert-danger mt-2">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- кнопки: создать и отмена -->
+                    <div class="d-flex gap-3">
+                        {{ form.submit(class="btn btn-primary flex-grow-1") }}
+                        <a href="/playlists" class="btn btn-outline-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

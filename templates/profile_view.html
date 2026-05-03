@@ -1,0 +1,117 @@
+{% extends "base2.html" %}
+
+{% block main %}
+
+<div class="profile-container">
+    <div class="profile-container-statistics">
+        <div class="item-likes" style="gap: 44px">
+            <div class="heart-icon"></div>
+            <span class="likes-count" style="font-size: 44px">{{ likes_count }}</span>
+        </div>
+
+        <div class="profile-container-line">
+            <img src="../static/imgs/eye.png" width="50px" height="50px">
+            <span class="likes-count" style="font-size: 44px">{{ views_count }}</span>
+        </div>
+
+        <div class="profile-container-line">
+            <p style="padding-top: 40px">ТРЕКОВ</p>
+            <span class="likes-count" style="font-size: 44px">{{ tracks_count }}</span>
+        </div>
+
+        <div class="profile-container-line">
+            <p style="padding-top: 40px">БЫЛ В ТОПЕ</p>
+            <span class="likes-count" style="font-size: 44px">{{ intop_total }}</span>
+        </div>
+    </div>
+
+    <div class="profile-container-statistics">
+
+        <h1>{{ artist_name }}</h1>
+
+        <span class="avatar"
+              style="width: 350px; height: 350px; font-size: 128px">{{ current_user.username[0]|upper }}</span>
+    </div>
+</div>
+
+<div class="top-divider">
+    <span class="top-label">ТРЕКИ</span>
+</div>
+
+<div class="top-box" style="min-height: 100%">
+    <div class="top-box-content">
+        <div class="top-row">
+            <div class="top-left" style="gap: 40px">
+                {% if tracks|length != 0 %}
+                <div class="top-items-list-double">
+                    {% for i in range( steps ) %}
+                    <div class="top-item">
+                        {% if i < tracks|length %}
+                        <div class="track-card">
+                            <div class="track-play" data-id="{{ tracks[i].id }}">
+                                <div class="play-circle">
+                                    <div class="play-triangle"></div>
+                                </div>
+                            </div>
+                            <div class="track-info">
+                                <div class="track-title">{{ tracks[i].title }}</div>
+                                <div class="track-artist">{{ tracks[i].user.username }}</div>
+                            </div>
+                        </div>
+                        <div class="item-likes">
+                            <div class="heart-icon"></div>
+                            <span class="likes-count">{{ tracks[i].likes_count }}</span>
+                        </div>
+                        {% else %}
+                        <div class="track-card empty">
+                            <div class="track-play">
+                                <div class="play-circle"></div>
+                            </div>
+                            <div class="track-info">
+                                <div class="track-title empty"></div>
+                                <div class="track-artist empty"></div>
+                            </div>
+                        </div>
+                        <div class="item-likes">
+                            <div class="heart-icon"></div>
+                            <span class="likes-count">0</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="profile-container-statistics">
+                    <a href="/tracks/{{ tracks[0].users_id }}" style="text-decoration: none">
+                        <p>Все треки</p>
+                    </a>
+                </div>
+                {% else %}
+                <div class="profile-container-statistics">
+                    <p style="padding-top: 40px; color: var(--text)">Пока не проявил себя :(</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.track-play').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const trackId = btn.getAttribute('data-id');
+            if (trackId) {
+                const trackCard = btn.closest('.track-card');
+                const trackTitle = trackCard.querySelector('.track-title').textContent;
+
+                player.playSingleTrack({
+                    id: trackId,
+                    title: trackTitle,
+                    cover_url: null
+                });
+            }
+        });
+    });
+</script>
+
+
+{% endblock %}
