@@ -401,15 +401,4 @@ if __name__ == '__main__':
         os.mkdir("uploads/imgs")
     db_session.global_init('db/rs.db')
 
-    # session = db_session.create_session()
-    # if not session.query(ApiKey).first():
-    #     admin_key = ApiKey(
-    #         key=ApiKey.generate_key(),
-    #         name='Admin Key'
-    #     )
-    #     session.add(admin_key)
-    #     session.commit()
-    #     print(f'ADMIN API KEY: {admin_key.key}')
-    # session.close()
-
     app.run(host='127.0.0.1', port=5000)
