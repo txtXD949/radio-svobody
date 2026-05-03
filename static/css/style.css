@@ -549,12 +549,6 @@ body.light-theme .theme-toggle {
         gap: 15px;
     }
 
-    .top-items-list-double {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px
-    }
-
     .top-item {
         flex-wrap: wrap;
         gap: 10px;
@@ -820,6 +814,12 @@ body.light-theme .theme-toggle {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+}
+
+.top-items-list-double {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px
 }
 
 .artist-item {

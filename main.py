@@ -435,28 +435,62 @@ def profile():
         )
 
 
+@app.route('/profile/<int:user_id>')
+@login_required
+def profile_view(user_id):
+    with db_session.create_session() as db_sess:
+        artist_name = db_sess.query(User).get(user_id).username
+        tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
+        playlists = db_sess.query(Playlist).filter(Playlist.user_id == user_id).all()
+
+        tracks_count = len(tracks)
+
+        steps = min(6, tracks_count)
+
+        intop_total = 0
+        likes_count = 0
+        views_count = 0
+        if tracks:
+            intop_total = db_sess.query(func.sum(Track.intop_count)).filter(Track.users_id == user_id).scalar()
+            likes_count = db_sess.query(func.sum(Track.likes_count)).filter(Track.users_id == user_id).scalar()
+            views_count = db_sess.query(func.sum(Track.views_count)).filter(Track.users_id == user_id).scalar()
+
+        return render_template(
+            'profile_view.html',
+            artist_name=artist_name,
+            title=artist_name,
+            tracks=tracks,
+            steps=steps,
+            tracks_count=tracks_count,
+            likes_count=likes_count,
+            views_count=views_count,
+            playlists=playlists,
+            intop_total=intop_total,
+            api_key=os.getenv('ADMIN_API_KEY')
+        )
+
+
 @app.route('/tracks/<int:user_id>')
 @login_required
 def tracks_page(user_id):
-    db_sess = db_session.create_session()
+    with db_session.create_session() as db_sess:
+        tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
 
-    tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
-
-    return render_template(
-        "tracks.html",
-        tracks=tracks,
-        api_key=os.getenv('ADMIN_API_KEY')
-    )
+        return render_template(
+            "tracks.html",
+            tracks=tracks,
+            api_key=os.getenv('ADMIN_API_KEY')
+        )
 
 
 @app.route('/settings')
 @login_required
 def settings():
-    db_sess = db_session.create_session()
-    return render_template(
-        "settings.html",
-        api_key=os.getenv('ADMIN_API_KEY')
-    )
+    with db_session.create_session() as db_sess:
+        return render_template(
+            "settings.html",
+            api_key=os.getenv('ADMIN_API_KEY')
+        )
 
 
 @app.route('/playlists')
