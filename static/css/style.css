@@ -549,6 +549,12 @@ body.light-theme .theme-toggle {
         gap: 15px;
     }
 
+    .top-items-list-double {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px
+    }
+
     .top-item {
         flex-wrap: wrap;
         gap: 10px;
@@ -1357,4 +1363,45 @@ body.light-theme .theme-toggle {
     border-radius: 8px;
     color: var(--text);
     padding: 10px;
+}
+
+/* Стили для профилей */
+.profile-container {
+    display: flex;
+    gap: 40px;
+    margin: 40px 0 60px;
+    justify-content: space-around;
+}
+
+.profile-container-statistics {
+    display: flex;
+    gap: 40px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.profile-container-statistics h1 {
+    font-family: 'Courier Prime', sans-serif;
+    font-weight: bold;
+    font-size: 40px;
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--primary);
+}
+
+.profile-container-statistics p {
+    font-family: 'Courier Prime', sans-serif;
+    font-weight: bold;
+    font-size: 32px;
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--primary);
+}
+
+.profile-container-line {
+    display: flex;
+    gap: 40px;
+    justify-content: space-around;
+    align-items: center;
 }

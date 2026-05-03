@@ -403,33 +403,36 @@ def subgenre_page(subgenre_name):
 def profile():
     user_id = current_user.id
 
-    db_sess = db_session.create_session()
-    artist_name = db_sess.query(User).get(user_id).username
-    tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
-    playlists = db_sess.query(Playlist).filter(Playlist.user_id == user_id).all()
+    with db_session.create_session() as db_sess:
+        artist_name = db_sess.query(User).get(user_id).username
+        tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
+        playlists = db_sess.query(Playlist).filter(Playlist.user_id == user_id).all()
 
-    tracks_count = len(tracks)
+        tracks_count = len(tracks)
 
-    steps = min(6, tracks_count)
+        steps = min(6, tracks_count)
 
-    likes_count = 0
-    views_count = 0
-    if tracks:
-        likes_count = db_sess.query(func.sum(Track.likes_count)).filter(Track.users_id == user_id).scalar()
-        views_count = db_sess.query(func.sum(Track.views_count)).filter(Track.users_id == user_id).scalar()
+        intop_total = 0
+        likes_count = 0
+        views_count = 0
+        if tracks:
+            intop_total = db_sess.query(func.sum(Track.intop_count)).filter(Track.users_id == user_id).scalar()
+            likes_count = db_sess.query(func.sum(Track.likes_count)).filter(Track.users_id == user_id).scalar()
+            views_count = db_sess.query(func.sum(Track.views_count)).filter(Track.users_id == user_id).scalar()
 
-    return render_template(
-        'profile.html',
-        artist_name=artist_name,
-        title=artist_name,
-        tracks=tracks,
-        steps=steps,
-        tracks_count=tracks_count,
-        likes_count=likes_count,
-        views_count=views_count,
-        playlists=playlists,
-        api_key=os.getenv('ADMIN_API_KEY')
-    )
+        return render_template(
+            'profile.html',
+            artist_name=artist_name,
+            title=artist_name,
+            tracks=tracks,
+            steps=steps,
+            tracks_count=tracks_count,
+            likes_count=likes_count,
+            views_count=views_count,
+            playlists=playlists,
+            intop_total=intop_total,
+            api_key=os.getenv('ADMIN_API_KEY')
+        )
 
 
 @app.route('/tracks/<int:user_id>')
@@ -519,7 +522,6 @@ if __name__ == '__main__':
 
     with db_session.create_session() as session:
         if not session.query(ApiKey).first():  # проверка, что ключ один
-            api_key = create_apikey('ADMIN')
-    print('ADMIN_API_KEY:', api_key)
+            create_apikey('ADMIN')
 
     app.run(host='127.0.0.1', port=5000)  # запуск сервера

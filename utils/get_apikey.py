@@ -11,4 +11,4 @@ def create_apikey(name):
         )
         session.add(admin_key)
         session.commit()
-    return admin_key
+        print(admin_key.key)
