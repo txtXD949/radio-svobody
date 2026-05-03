@@ -1,3 +1,4 @@
+import wtforms
 from flask import Flask, jsonify, redirect, render_template, send_from_directory, request
 from flask_restful import Api, abort
 from werkzeug.exceptions import HTTPException
@@ -324,6 +325,31 @@ def profile():
         api_key=os.getenv('ADMIN_API_KEY')
     )
 
+
+@app.route('/tracks/<int:user_id>')
+@login_required
+def tracks_page(user_id):
+    db_sess = db_session.create_session()
+
+    tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
+
+    return render_template(
+        "tracks.html",
+        tracks=tracks,
+        api_key=os.getenv('ADMIN_API_KEY')
+    )
+
+
+@app.route('/settings')
+@login_required
+def settings():
+    db_sess = db_session.create_session()
+    return render_template(
+        "settings.html",
+        api_key=os.getenv('ADMIN_API_KEY')
+    )
+
+
 @app.route('/playlists')
 @login_required
 def playlists():
@@ -345,7 +371,8 @@ def create_playlist():
         db_sess.commit()
         return redirect('/playlists')
 
-    return render_template('create_playlist.html', title='Новый плейлист', form=form, api_key=os.getenv('ADMIN_API_KEY'))
+    return render_template('create_playlist.html', title='Новый плейлист', form=form,
+                           api_key=os.getenv('ADMIN_API_KEY'))
 
 
 @app.route('/playlist/<int:playlist_id>')
@@ -365,6 +392,7 @@ def playlist_page(playlist_id):
                            playlist_title=playlist.title,
                            title=playlist.title,
                            api_key=os.getenv('ADMIN_API_KEY'))
+
 
 if __name__ == '__main__':
     if "uploads" not in os.listdir():

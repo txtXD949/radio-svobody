@@ -2,49 +2,12 @@
 
 {% block main %}
 
-<div class="profile-container">
-    <div class="profile-container-statistics">
-        <div class="item-likes" style="gap: 44px">
-            <div class="heart-icon"></div>
-            <span class="likes-count" style="font-size: 44px">{{ likes_count }}</span>
-        </div>
-
-        <div class="profile-container-line">
-            <img src="../static/imgs/eye.png" width="50px" height="50px">
-            <span class="likes-count" style="font-size: 44px">{{ views_count }}</span>
-        </div>
-
-        <div class="profile-container-line">
-            <p style="padding-top: 40px">ТРЕКОВ</p>
-            <span class="likes-count" style="font-size: 44px">{{ tracks_count }}</span>
-        </div>
-
-        <div class="profile-container-line">
-            <p style="padding-top: 40px">БЫЛ В ТОПЕ</p>
-            <span class="likes-count" style="font-size: 44px">32</span>
-        </div>
-    </div>
-
-    <div class="profile-container-statistics">
-
-        <h1>{{ artist_name }}</h1>
-
-        <span class="avatar"
-              style="width: 350px; height: 350px; font-size: 128px">{{ current_user.username[0]|upper }}</span>
-    </div>
-</div>
-
-<div class="top-divider">
-    <span class="top-label">ТРЕКИ</span>
-</div>
-
 <div class="top-box" style="min-height: 100%">
     <div class="top-box-content">
         <div class="top-row">
-            <div class="top-left" style="gap: 40px">
-                {% if tracks|length != 0 %}
+            <div class="top-left">
                 <div class="top-items-list-double">
-                    {% for i in range( steps ) %}
+                    {% for i in range( tracks|length ) %}
                     <div class="top-item">
                         {% if i < tracks|length %}
                         <div class="track-card">
@@ -80,45 +43,11 @@
                     </div>
                     {% endfor %}
                 </div>
-                <div class="profile-container-statistics">
-                    <a href="/tracks/{{ tracks[0].users_id }}" style="text-decoration: none">
-                        <p>Все треки</p>
-                    </a>
-                </div>
-                {% else %}
+                {% if tracks|length == 0 %}
                 <div class="profile-container-statistics">
                     <p style="padding-top: 40px; color: var(--text)">Пока не проявил себя :(</p>
                 </div>
                 {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="top-divider">
-    <span class="top-label">ПЛЕЙЛИСТЫ</span>
-</div>
-
-<div class="top-box" style="min-height: 100%">
-    <div class="top-box-content">
-        <div class="top-row">
-            <div class="top-left">
-                <div class="top-items-list-double">
-                    {% for i in range( playlists|length ) %}
-                    <a href="/playlist/{{ playlists[i].id }}">
-                        <div class="playlist-card" data-id="{{ playlists[i].id }}">
-                            <div class="playlist-info">
-                                <div class="playlist-title">{{ playlists[i].title }}</div>
-                            </div>
-                        </div>
-                    </a>
-                    {% endfor %}
-                    {% if tracks|length == 0 %}
-                    <div class="profile-container-statistics">
-                        <p style="padding-top: 40px; color: var(--text)">Тут пустовато...</p>
-                    </div>
-                    {% endif %}
-                </div>
             </div>
         </div>
     </div>
