@@ -2,20 +2,32 @@
 
 {% block main %}
 <div class="container py-5">
+    <!-- заголовок с запросом пользователя -->
     <h1 class="mb-4">Результаты поиска: <span class="text-primary">{{ query }}</span></h1>
 
-    {% if not tracks and not artists %}
+    <!-- если ничего не найдено -->
+    {% if not tracks and not artists and not genres and not subgenres %}
     <p class="text-secondary">Ничего не найдено</p>
     {% endif %}
 
+    <!-- навигация по разделам (якоря) -->
+    <div class="search-nav">
+        {% if users %}<a href="#users">Пользователи</a>{% endif %}
+        {% if tracks %}<a href="#tracks">Треки</a>{% endif %}
+        {% if genres %}<a href="#genres">Жанры</a>{% endif %}
+        {% if subgenres %}<a href="#subgenres">Поджанры</a>{% endif %}
+    </div>
+
+    <!-- блок "треки" -->
     {% if tracks %}
-    <div class="top-box mb-5">
+    <div id="tracks" class="top-box mb-5">
         <div class="top-box-title">ТРЕКИ</div>
         <div class="top-box-content">
             <div class="top-items-list">
                 {% for track in tracks[:10] %}
                 <div class="top-item">
                     <div class="track-card w-100">
+                        <!-- кнопка воспроизведения -->
                         <div class="track-play" data-id="{{ track.id }}">
                             <div class="play-circle">
                                 <div class="play-triangle"></div>
@@ -37,8 +49,9 @@
     </div>
     {% endif %}
 
+    <!-- блок "исполнители" -->
     {% if artists %}
-    <div class="top-box">
+    <div id="users" class="top-box">
         <div class="top-box-title">ИСПОЛНИТЕЛИ</div>
         <div class="top-box-content">
             <div class="top-items-list">
@@ -58,8 +71,37 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- блок "жанры" (ссылки) -->
+    {% if genres %}
+    <div id="genres" class="top-box mb-4">
+        <div class="top-box-title">ЖАНРЫ</div>
+        <div class="top-box-content">
+            <div class="genres-list">
+                {% for genre in genres %}
+                <a href="/genre/{{ genre.id }}" class="genre-link">{{ genre.title }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- блок "поджанры" (ссылки) -->
+    {% if subgenres %}
+    <div id="subgenres" class="top-box mb-4">
+        <div class="top-box-title">ПОДЖАНРЫ</div>
+        <div class="top-box-content">
+            <div class="genres-list">
+                {% for sg in subgenres %}
+                <a href="/subgenre/{{ sg }}" class="genre-link">{{ sg }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
+<!-- обработчики кнопок воспроизведения (одиночное воспроизведение) -->
 <script>
     document.querySelectorAll('.track-play').forEach(btn => {
         btn.addEventListener('click', () => {

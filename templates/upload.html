@@ -8,31 +8,50 @@
                 <h1 class="text-center mb-4">ЗАГРУЗИТЬ ТРЕК</h1>
                 <form action="" method="post" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
-                    
+
+                    <!-- поле "название трека" -->
                     <div class="mb-3">
                         {{ form.title.label }}
                         {{ form.title(class="form-control") }}
                     </div>
-                    
+
+                    <!-- поле "жанр" -->
                     <div class="mb-3">
                         {{ form.genre_id.label }}
-                        {{ form.genre_id(class="form-control") }}
+                        <!-- кастомный select, инициализируется через select2 -->
+                        <select name="genre_id" class="form-control" id="genre_select" required>
+                            <option value=""></option>
+                            {% for genre in form.genre_id.choices %}
+                            <option value="{{ genre[0] }}">{{ genre[1] }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    
+
+                    <!-- поле "поджанры" -->
                     <div class="mb-3">
                         {{ form.subgenres.label }}
                         {{ form.subgenres(class="form-control") }}
                     </div>
-                    
+
+                    <!-- поле для загрузки аудиофайла (.mp3, .wav, .ogg) -->
                     <div class="mb-3">
                         {{ form.audio_file.label }}
                         {{ form.audio_file(class="form-control", accept=".mp3,.wav,.ogg") }}
                     </div>
-                    
+
+                    <!-- кнопка отправки -->
                     {{ form.submit(class="btn btn-primary w-100") }}
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<!-- инициализация select2 (выпадающий список с поиском) -->
+<script>
+    $(document).ready(function() {
+        $('#genre_select').select2();
+    });
+</script>
+
 {% endblock %}

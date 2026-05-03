@@ -6,6 +6,7 @@ from wtforms.validators import DataRequired, Email
 
 
 class LoginForm(FlaskForm):
+    """Форма авторизации"""
     email = EmailField('Email', validators=[DataRequired(), Email(message='Введите корректный email')])
     password = PasswordField('Пароль', validators=[DataRequired()])
     remember_me = BooleanField('Запомнить меня')
@@ -13,6 +14,7 @@ class LoginForm(FlaskForm):
 
 
 class RegisterForm(FlaskForm):
+    """Форма регистрации"""
     username = StringField('Имя', validators=[DataRequired()])
     email = EmailField('Email', validators=[DataRequired(), Email(message='Введите корректный email')])
     password = PasswordField('Пароль', validators=[DataRequired()])
@@ -21,17 +23,18 @@ class RegisterForm(FlaskForm):
 
 
 class TrackForm(FlaskForm):
+    """Форма загрузки нового трека"""
     title = StringField('Название', validators=[DataRequired()])
     audio_file = FileField('Аудиофайл (.mp3)', validators=[
-        FileRequired(),
-        FileAllowed(['mp3', 'wav', 'ogg'], 'Аудиофайлы MP3')
+        FileRequired(),                                                         # файл обязательный
+        FileAllowed(['mp3', 'wav', 'ogg'], 'Аудиофайлы MP3')  # разрешенные файлы
     ])
-    genre_id = SelectField('Жанр', coerce=int, validators=[DataRequired()])
-    subgenres = StringField('Поджанры (через запятую)')
+    genre_id = SelectField('Жанр', coerce=int, validators=[DataRequired()])  # coerce=int — преобразует в int
+    subgenres = StringField('Поджанры (через запятую без пробелов)')
     submit = SubmitField('КИНУТЬ В СВАЛКУ')
 
 
 class PlaylistForm(FlaskForm):
+    """Форма создания плейлиста"""
     title = StringField('Название плейлиста', validators=[DataRequired()])
     submit = SubmitField('СОЗДАТЬ')
-

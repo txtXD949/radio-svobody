@@ -20,7 +20,5 @@ class Track(SqlAlchemyBase, SerializerMixin):
     intop_count = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now())
 
-    collaborations = sqlalchemy.Column(sqlalchemy.String, default='')  # через запятую id пользователей (без пробелаов)
-
     genre = orm.relationship('Genre')
     user = orm.relationship('User')

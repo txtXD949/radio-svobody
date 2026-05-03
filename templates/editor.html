@@ -2,13 +2,15 @@
 
 {% block main %}
 <div class="editor-container">
+    <!-- аудиоредактор audiomass через iframe -->
      <iframe src="https://audiomass.co"
             class="audiomass-frame"
             title="AudioMass Editor"
-            allow="microphone; autoplay">
+            allow="microphone; autoplay">  <!-- разрешаем микрофон и автостарт -->
     </iframe>
 
     <div class="editor-actions">
+        <!-- кнопка перехода к форме загрузки трека -->
         <a href="/upload-track" class="btn btn-primary">КИНУТЬ В СВАЛКУ</a>
         <p class="text-secondary mt-2">Сначала сохраните проект в Audiomass как .mp3, затем загрузите</p>
     </div>

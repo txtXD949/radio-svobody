@@ -1,0 +1,71 @@
+{% extends "base2.html" %}
+
+{% block main %}
+<div class="container py-5">
+    <h1 class="mb-4">Поджанр: {{ subgenre_name }}</h1>
+
+    <div class="top-box">
+        <div class="top-box-content">
+            <div class="top-items-list">
+                {% for track in tracks %}
+                <div class="top-item">
+                    <div class="track-card w-100">
+                        <!-- кнопка воспроизведения -->
+                        <div class="track-play" data-id="{{ track.id }}">
+                            <div class="play-circle">
+                                <div class="play-triangle"></div>
+                            </div>
+                        </div>
+                        <div class="track-info flex-grow-1">
+                            <div class="track-title">{{ track.title }}</div>
+                            <div class="track-artist">{{ track.user.username }}</div>
+                        </div>
+                        <div class="item-likes">
+                            <div class="heart-icon"></div>
+                            <span class="likes-count">{{ track.likes_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- кнопка возврата к поиску -->
+    <div class="mt-4 text-center">
+        <a href="/search" class="btn btn-outline-primary">← Новый поиск</a>
+    </div>
+</div>
+
+<script>
+    // ждём полной загрузки dom перед работой с плеером
+    document.addEventListener('DOMContentLoaded', function() {
+        // формируем плейлист из всех треков поджанра
+        const subgenrePlaylist = [
+            {% for track in tracks %}
+            { id: {{ track.id }}, title: '{{ track.title|replace("'", "\\'") }}', cover_url: null },
+            {% endfor %}
+        ];
+
+        // если плеер загружен и есть треки — загружаем плейлист (не запуская воспроизведение)
+        console.log('Плейлист поджанра:', subgenrePlaylist.length);
+        console.log('player доступен?', typeof player !== 'undefined');
+
+        if (typeof player !== 'undefined' && subgenrePlaylist.length) {
+            player.setPlaylist(subgenrePlaylist, 0);
+        }
+
+        // обработчик клика по треугольнику — начинает воспроизведение с выбранного трека
+        document.querySelectorAll('.track-play').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const trackId = btn.getAttribute('data-id');
+                const index = subgenrePlaylist.findIndex(t => t.id == trackId);
+                if (index !== -1 && typeof player !== 'undefined') {
+                    player.setPlaylist(subgenrePlaylist, index);
+                    player.play();  // запускаем воспроизведение
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,10 +1,13 @@
 {% extends "base1.html" %}
 
 {% block content %}
+<!-- карточка для форм -->
 <div class="auth-card">
     <h1>Авторизация</h1>
     <form action="" method="post">
         {{ form.hidden_tag() }}
+
+        <!-- поле email -->
         <p>
             {{ form.email.label }}<br>
             {{ form.email(class="form-control", type="email") }}<br>
@@ -12,6 +15,8 @@
                 <div class="alert alert-danger" role="alert">{{ error }}</div>
             {% endfor %}
         </p>
+
+        <!-- поле пароля -->
         <p>
             {{ form.password.label }}<br>
             {{ form.password(class="form-control", type="password") }}<br>
@@ -19,12 +24,20 @@
                 <div class="alert alert-danger" role="alert">{{ error }}</div>
             {% endfor %}
         </p>
+
+        <!-- чекбокс "запомнить меня" -->
         <div class="form-check">
             {{ form.remember_me(class="form-check-input") }}
             {{ form.remember_me.label(class="form-check-label") }}
         </div>
+
+        <!-- ссылка на регистрацию -->
         <p class="text-center mt-3">Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
+
+        <!-- кнопка отправки формы -->
         <p>{{ form.submit(class="btn btn-primary", type="submit") }}</p>
+
+        <!-- сообщение об ошибке (неверный логин/пароль) -->
         <div>{{ message }}</div>
     </form>
 </div>

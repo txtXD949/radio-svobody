@@ -1,129 +1,110 @@
 from flask_restful import Resource, abort
 from flask import jsonify, request
-from flask_login import current_user, login_required
 from data import db_session
 from data.tracks import Track
 from data.likes import Like
-from data.api_key import ApiKey
 from .track_parser import track_parser
-
-
-def check_api_key():
-    api_key = request.headers.get('X-API-Key')
-
-    if not api_key:
-        abort(401, message='API key required')
-
-    db_sess = db_session.create_session()
-    key_obj = db_sess.query(ApiKey).filter(
-        ApiKey.key == api_key,
-        ApiKey.is_active == True
-    ).first()
-    db_sess.close()
-
-    if not key_obj:
-        abort(401, message='Invalid API key')
+from .auth import check_api_key
 
 
 def not_found_track(track_id):
-    db_sess = db_session.create_session()
-    track = db_sess.query(Track).get(track_id)
-    if not track:
-        abort(404, message=f'Track {track_id} not found')
-    return db_sess, track
+    with db_session.create_session() as db_sess:
+        track = db_sess.query(Track).get(track_id)
+        if not track:
+            abort(404, message=f'Track {track_id} not found')
+        return track
 
 
 class TrackResource(Resource):
     def get(self, track_id):
         check_api_key()
-        db_sess, track = not_found_track(track_id)
-        db_sess.commit()
-        db_sess.close()
+        track = not_found_track(track_id)
         return jsonify({'track': track.to_dict()})
 
     def delete(self, track_id):
         check_api_key()
-        db_sess, track = not_found_track(track_id)
-        db_sess.delete(track)
-        db_sess.commit()
-        db_sess.close()
-        return jsonify({'success': 'OK'})
+        with db_session.create_session() as db_sess:
+            track = db_sess.query(Track).get(track_id)
+            if not track:
+                abort(404, message=f'Track {track_id} not found')
+            db_sess.delete(track)
+            db_sess.commit()
+            return jsonify({'success': 'OK'})
 
     def put(self, track_id):
         check_api_key()
-        db_sess, track = not_found_track(track_id)
         args = track_parser.parse_args()
+        with db_session.create_session() as db_sess:
+            track = db_sess.query(Track).get(track_id)
+            if not track:
+                abort(404, message=f'Track {track_id} not found')
 
-        track.title = args['title']
-        track.genre_id = args['genre_id']
-        track.subgenres = args['subgenres']
-        track.file_path = args['file_path']
-        track.users_id = args['users_id']
-        track.collaborations = args['collaborations']
+            track.title = args['title']
+            track.genre_id = args['genre_id']
+            track.subgenres = args['subgenres']
+            track.file_path = args['file_path']
+            track.users_id = args['users_id']
+            track.collaborations = args['collaborations']
 
-        db_sess.commit()
-        db_sess.close()
-        return jsonify({'success': 'OK'})
+            db_sess.commit()
+            return jsonify({'success': 'OK'})
 
 
 class TrackListResource(Resource):
     def get(self):
         check_api_key()
-        db_sess = db_session.create_session()
-
         genre_id = request.args.get('genre_id', type=int)
 
-        if genre_id and genre_id > 0:
-            tracks = db_sess.query(Track).filter(Track.genre_id == genre_id)
-        else:
-            tracks = db_sess.query(Track).all()
+        with db_session.create_session() as db_sess:
+            if genre_id and genre_id > 0:
+                tracks = db_sess.query(Track).filter(Track.genre_id == genre_id).all()
+            else:
+                tracks = db_sess.query(Track).all()
 
-        tracks_data = [t.to_dict() for t in tracks]
-
-        db_sess.close()
-
-        return jsonify({'tracks': tracks_data})
+            tracks_data = [t.to_dict() for t in tracks]
+            return jsonify({'tracks': tracks_data})
 
     def post(self):
-        check_api_key()  # Проверка ключа
+        check_api_key()
         args = track_parser.parse_args()
-        db_sess = db_session.create_session()
 
-        track = Track(
-            title=args['title'],
-            genre_id=args['genre_id'],
-            subgenres=args['subgenres'],
-            file_path=args['file_path'],
-            users_id=args['users_id'],
-            collaborations=args['collaborations']
-        )
-
-        db_sess.add(track)
-        db_sess.commit()
-        db_sess.close()
-        return jsonify({'id': track.id})
+        with db_session.create_session() as db_sess:
+            track = Track(
+                title=args['title'],
+                genre_id=args['genre_id'],
+                subgenres=args['subgenres'],
+                file_path=args['file_path'],
+                users_id=args['users_id'],
+                collaborations=args['collaborations']
+            )
+            db_sess.add(track)
+            db_sess.commit()
+            return jsonify({'id': track.id})
 
 
 class TrackLikeResource(Resource):
-    @login_required
     def post(self, track_id):
-        db_sess = db_session.create_session()
-        try:
-            user_id = current_user.id
+        check_api_key()
+        data = request.get_json()
+        user_id = data.get('user_id')
+
+        if not user_id:
+            return {'message': 'user_id required'}, 400
+
+        with db_session.create_session() as db_sess:
             ex_like = db_sess.query(Like).filter(Like.track_id == track_id, Like.user_id == user_id).first()
             track = db_sess.get(Track, track_id)
 
             if ex_like:
                 db_sess.delete(ex_like)
                 track.likes_count -= 1
+                liked = False
             else:
                 like = Like(track_id=track_id, user_id=user_id)
                 db_sess.add(like)
                 track.likes_count += 1
+                liked = True
 
             db_sess.commit()
-            likes_count = track.likes_count  # прочитали ДО закрытия сессии
-        finally:
-            db_sess.close()
-
-        return {'likes_count': likes_count, 'liked': ex_like is None}
+            likes_count = track.likes_count
+            return {'likes_count': likes_count, 'liked': liked}

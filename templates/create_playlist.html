@@ -10,6 +10,7 @@
                 <form action="" method="post">
                     {{ form.hidden_tag() }}
 
+                    <!-- поле ввода названия плейлиста -->
                     <div class="mb-3">
                         {{ form.title.label }}
                         {{ form.title(class="form-control") }}
@@ -18,6 +19,7 @@
                         {% endfor %}
                     </div>
 
+                    <!-- кнопки: создать и отмена -->
                     <div class="d-flex gap-3">
                         {{ form.submit(class="btn btn-primary flex-grow-1") }}
                         <a href="/playlists" class="btn btn-outline-secondary">Отмена</a>
