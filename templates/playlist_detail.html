@@ -16,6 +16,7 @@
 
 <script>
     const playlistId = {{ playlist_id }};
+    let currentPlaylist = [];  // храним текущий плейлист для плеера
 
     // загрузка треков плейлиста с сервера
     async function loadTracks() {
@@ -25,15 +26,15 @@
         const tracks = await response.json();
 
         // формируем плейлист для плеера
-        const playerTracks = tracks.map(t => ({
+        currentPlaylist = tracks.map(t => ({
             id: t.track_id,
             title: t.title,
             cover_url: null
         }));
 
         // если есть треки — загружаем в плеер
-        if (playerTracks.length) {
-            player.setPlaylist(playerTracks, 0);
+        if (currentPlaylist.length) {
+            player.setPlaylist(currentPlaylist, 0);
         }
 
         const container = document.getElementById('tracksList');
@@ -51,7 +52,7 @@
                     <span class="track-order">${t.order + 1}</span>
                     <button class="order-btn down" onclick="moveTrack(${t.track_id}, 'down')">▼</button>
                 </div>
-                <div class="track-play-btn" onclick="playTrack(${t.track_id}, '${escapeHtml(t.title)}')">
+                <div class="track-play" data-id="${t.track_id}">
                     <div class="play-circle small">
                         <div class="play-triangle"></div>
                     </div>
@@ -63,6 +64,23 @@
                 <button class="remove-track-btn" onclick="removeTrack(${t.track_id})">✕</button>
             </div>
         `).join('');
+
+        // обновляем иконки воспроизведения (какой трек сейчас играет)
+        if (typeof player !== 'undefined') {
+            player.updatePlayIcons(player.currentTrack ? player.currentTrack.id : null);
+        }
+
+        // обработчик клика по треугольнику — начинает воспроизведение с выбранного трека
+        document.querySelectorAll('.track-play').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const trackId = parseInt(btn.getAttribute('data-id'));
+                const index = currentPlaylist.findIndex(t => t.id === trackId);
+                if (index !== -1 && typeof player !== 'undefined') {
+                    player.setPlaylist(currentPlaylist, index);
+                    player.play();
+                }
+            });
+        });
     }
 
     // защита от xss
@@ -70,15 +88,6 @@
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
-    }
-
-    // воспроизведение одного трека
-    function playTrack(trackId, title) {
-        player.playSingleTrack({
-            id: trackId,
-            title: title,
-            cover_url: null
-        });
     }
 
     // изменение порядка трека (вверх/вниз)

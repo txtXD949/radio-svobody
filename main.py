@@ -62,9 +62,9 @@ app.config['MAIL_SERVER'] = 'smtp.yandex.ru'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USERNAME'] = 'radio.svobodi532@yandex.ru'
+app.config['MAIL_USERNAME'] = 'rezistorka@ya.ru'
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = 'radio.svobodi532@yandex.ru'
+app.config['MAIL_DEFAULT_SENDER'] = 'rezistorka@ya.ru'
 
 mail.init_app(app)
 
@@ -163,9 +163,16 @@ def register():
             db_sess.add(user)
             db_sess.commit()
 
-        send_conf_email(user.email, user.username)  # отправка письма с подтверждением
+            # сохраняем id и данные до закрытия сессии
+            user_id = user.id
+            user_email = user.email
+            user_username = user.username
 
-        login_user(user)  # авторизация
+        # отправка письма с подтверждением (используем сохранённые данные)
+        send_conf_email(user_email, user_username)
+
+        # загружаем пользователя заново через user_loader
+        login_user(load_user(user_id))  # авторизация
         return redirect('/confirm_wait')
     return render_template('register.html', form=form, title='Регистрация')
 
