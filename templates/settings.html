@@ -2,4 +2,36 @@
 
 {% block main %}
 
+<div class="profile-container">
+    <form action="" method="post" enctype="multipart/form-data">
+        <div class="profile-container-statistics">
+            <div class="profile-container-line">
+                <h1>Имя: {{ artist_name }}</h1>
+            </div>
+
+            <div class="mb-3">
+                {{ form.username.label }}
+                {{ form.username(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="profile-container-statistics">
+            {% if avatar_path %}
+            <img src="placeholder" style="width: 350px; height: 350px">
+            {% else %}
+            <span class="avatar"
+                  style="width: 350px; height: 350px; font-size: 128px">{{ current_user.username[0]|upper }}</span>
+            {% endif %}
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                {{ form.image_file.label }}
+                {{ form.image_file(class="form-control", accept=".png,.jpg,.jpeg") }}
+            </div>
+
+            {{ form.submit(class="btn btn-primary w-100") }}
+        </div>
+    </form>
+</div>
+
 {% endblock %}

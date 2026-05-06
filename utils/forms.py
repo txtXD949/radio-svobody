@@ -38,3 +38,13 @@ class PlaylistForm(FlaskForm):
     """Форма создания плейлиста"""
     title = StringField('Название плейлиста', validators=[DataRequired()])
     submit = SubmitField('СОЗДАТЬ')
+
+
+class SettingsForm(FlaskForm):
+    """Форма настроек"""
+    username = StringField('Имя', validators=[DataRequired()])
+    image_file = FileField('Изображение (.png)', validators=[
+        FileRequired(),  # файл обязательный
+        FileAllowed(['png', 'jpg', 'jpeg'], 'Изображение PNG')  # разрешенные файлы
+    ])
+    submit = SubmitField('Подтвердить изменения')

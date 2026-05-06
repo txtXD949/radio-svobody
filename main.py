@@ -28,7 +28,7 @@ from resources import (
     PlaylistTracksResource, PlaylistTrackResource,
     PlaylistListResource, PlaylistResource
 )
-from utils.forms import LoginForm, RegisterForm, TrackForm, PlaylistForm
+from utils.forms import LoginForm, RegisterForm, TrackForm, PlaylistForm, SettingsForm
 from utils.mail_utils import send_conf_email, conf_token
 from utils.mail_init import mail
 from utils.scheduler import start_scheduler
@@ -490,14 +490,47 @@ def tracks_page(user_id):
         )
 
 
-@app.route('/settings')
+@app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
+    form = SettingsForm()
+
     with db_session.create_session() as db_sess:
-        return render_template(
-            "settings.html",
-            api_key=os.getenv('ADMIN_API_KEY')
-        )
+        user = db_sess.query(User).get(current_user.id)
+        artist_name = user.username
+        avatar_path = user.avatar
+
+    form.username.data = artist_name
+
+    if avatar_path:
+        avatar_path = avatar_path.split("/")[-1]
+        print(avatar_path)
+
+    if form.validate_on_submit():
+        image = form.image_file.data
+
+        extens = r'png|jpg|jpeg'  # проверка расширений
+        if not fullmatch(fr'.+\.({extens})', image.filename, IGNORECASE):
+            abort(400, message='Неподдерживаемый формат файла')
+
+        filename = secure_filename(
+            f'{current_user.id}_{int(time.time())}.png')  # даем файлу уникальное имя и сохраняем
+
+        filepath = f'uploads/imgs/{filename}'
+        image.save(filepath)
+
+        with db_session.create_session() as db_sess:
+            user = db_sess.query(User).filter(User.id == current_user.id).first()
+            user.avatar = filepath
+            db_sess.commit()
+
+    return render_template(
+        "settings.html",
+        artist_name=artist_name,
+        avatar_path=avatar_path,
+        form=form,
+        api_key=os.getenv('ADMIN_API_KEY'),
+    )
 
 
 @app.route('/playlists')
