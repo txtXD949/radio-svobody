@@ -76,7 +76,7 @@ AUDIO_PLACEHOLDER = 'uploads/snds/placeholder.mp3'
 
 def create_audio_placeholder():
     """Создаёт папку и пустой аудиофайл-заглушку"""
-    os.makedirs('uploads/snds', exist_ok=True)
+    os.makedirs('static/uploads/snds', exist_ok=True)
     if not os.path.exists(AUDIO_PLACEHOLDER):
         with open(AUDIO_PLACEHOLDER, 'wb') as f:
             f.close()
@@ -138,7 +138,7 @@ def generate_test_data():
                 genre_id=genre.id,
                 subgenres=subgenres,
                 users_id=user.id,
-                file_path=f'uploads/snds/track_{track_id_counter}.mp3',
+                file_path=f'static/uploads/snds/track_{track_id_counter}.mp3',
                 likes_count=random.randint(0, 50),
                 views_count=random.randint(0, 200),
                 intop_count=random.randint(0, 10),

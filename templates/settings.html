@@ -17,7 +17,7 @@
 
         <div class="profile-container-statistics">
             {% if avatar_path %}
-            <img src="placeholder" style="width: 350px; height: 350px">
+            <img src="{{ avatar_path }}" style="width: 350px; height: 350px; border-radius: 50%;">
             {% else %}
             <span class="avatar"
                   style="width: 350px; height: 350px; font-size: 128px">{{ current_user.username[0]|upper }}</span>

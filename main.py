@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, redirect, render_template, send_from_directory, request
+from flask import Flask, jsonify, redirect, render_template, send_from_directory, request, url_for
 from flask_restful import Api, abort
 from werkzeug.exceptions import HTTPException
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -273,7 +273,7 @@ def update_track():
             abort(400, message='Неподдерживаемый формат файла')
 
         filename = secure_filename(f'{current_user.id}_{int(time.time())}.mp3')  # даем файлу уникальное имя и сохраняем
-        filepath = f'uploads/snds/{filename}'
+        filepath = f'static/uploads/snds/{filename}'
         audio.save(filepath)
 
         with db_session.create_session() as db_sess:
@@ -498,12 +498,12 @@ def settings():
     with db_session.create_session() as db_sess:
         user = db_sess.query(User).get(current_user.id)
         artist_name = user.username
-        avatar_path = user.avatar
+        avatar_filename = user.avatar
 
     form.username.data = artist_name
 
-    if avatar_path:
-        avatar_path = avatar_path.split("/")[-1]
+    if avatar_filename:
+        avatar_path = url_for('static', filename=f'uploads/imgs/{avatar_filename}')
         print(avatar_path)
 
     if form.validate_on_submit():
@@ -513,16 +513,18 @@ def settings():
         if not fullmatch(fr'.+\.({extens})', image.filename, IGNORECASE):
             abort(400, message='Неподдерживаемый формат файла')
 
-        filename = secure_filename(
-            f'{current_user.id}_{int(time.time())}.png')  # даем файлу уникальное имя и сохраняем
+        filename = secure_filename(f'{current_user.id}_{int(time.time())}.png')  # даем файлу уникальное имя и сохраняем
 
-        filepath = f'uploads/imgs/{filename}'
+        upload_folder = 'static/uploads/imgs'
+        filepath = os.path.join(upload_folder, filename)
         image.save(filepath)
 
         with db_session.create_session() as db_sess:
             user = db_sess.query(User).filter(User.id == current_user.id).first()
-            user.avatar = filepath
+            user.avatar = filename
             db_sess.commit()
+
+        avatar_path = url_for('static', filename=f'uploads/imgs/{filename}')
 
     return render_template(
         "settings.html",
@@ -601,9 +603,9 @@ if __name__ == '__main__':
         if not session.query(ApiKey).first():  # проверка, что ключ один
             create_apikey('ADMIN')
 
-    if "uploads" not in os.listdir():
-        os.mkdir("uploads")
-        os.mkdir("uploads/snds")
-        os.mkdir("uploads/imgs")
+    if "uploads" not in os.listdir('static'):
+        os.mkdir("static/uploads")
+        os.mkdir("static/uploads/snds")
+        os.mkdir("static/uploads/imgs")
 
     app.run(host='127.0.0.1', port=5000)  # запуск сервера
