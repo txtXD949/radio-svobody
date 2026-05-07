@@ -28,7 +28,8 @@ from resources import (
     PlaylistTracksResource, PlaylistTrackResource,
     PlaylistListResource, PlaylistResource
 )
-from utils.forms import LoginForm, RegisterForm, TrackForm, PlaylistForm, SettingsForm
+from utils.forms import LoginForm, RegisterForm, TrackForm, PlaylistForm, SettingsForm, SettingsTrackForm, \
+    DeleteTrackForm
 from utils.mail_utils import send_conf_email, conf_token
 from utils.mail_init import mail
 from utils.scheduler import start_scheduler
@@ -419,6 +420,8 @@ def profile():
 
         steps = min(6, tracks_count)
 
+        steps_playlists = min(6, len(playlists))
+
         intop_total = 0
         likes_count = 0
         views_count = 0
@@ -438,6 +441,7 @@ def profile():
             views_count=views_count,
             playlists=playlists,
             intop_total=intop_total,
+            steps_playlists=steps_playlists,
             api_key=os.getenv('ADMIN_API_KEY')
         )
 
@@ -446,6 +450,9 @@ def profile():
 @login_required
 def profile_view(user_id):
     with db_session.create_session() as db_sess:
+        if user_id == current_user.id:
+            return redirect("/profile")
+
         artist_name = db_sess.query(User).get(user_id).username
         tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
         playlists = db_sess.query(Playlist).filter(Playlist.user_id == user_id).all()
@@ -493,14 +500,12 @@ def tracks_page(user_id):
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
-    form = SettingsForm()
-
     with db_session.create_session() as db_sess:
         user = db_sess.query(User).get(current_user.id)
         artist_name = user.username
         avatar_filename = user.avatar
 
-    form.username.data = artist_name
+        form = SettingsForm(data={"username": artist_name})
 
     if avatar_filename:
         avatar_path = url_for('static', filename=f'uploads/imgs/{avatar_filename}')
