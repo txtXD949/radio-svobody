@@ -563,6 +563,7 @@ def settings():
         api_key=os.getenv('ADMIN_API_KEY'),
     )
 
+
 @app.route('/settings/track/<int:track_id>', methods=['GET', 'POST'])
 @login_required
 def settings_track(track_id):
@@ -592,29 +593,6 @@ def settings_track(track_id):
             api_key=os.getenv('ADMIN_API_KEY'),
         )
 
-
-@app.route('/track-delete/<int:track_id>', methods=['GET', 'POST'])
-@login_required
-def track_delete(track_id):
-    with db_session.create_session() as db_sess:
-        form = DeleteTrackForm()
-
-        if db_sess.query(Track).filter(Track.id == track_id).one().users_id != current_user.id:
-            return redirect("/profile")
-
-        track = db_sess.query(Track).filter(Track.id == track_id).one()
-
-        if form.validate_on_submit():
-            db_sess.delete(track)
-            db_sess.commit()
-            return redirect("/profile")
-
-        return render_template(
-            "track_delete.html",
-            form=form,
-            track=track,
-            api_key=os.getenv('ADMIN_API_KEY')
-        )
 
 @app.route('/playlists')
 @login_required

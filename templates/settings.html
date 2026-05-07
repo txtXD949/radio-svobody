@@ -54,7 +54,7 @@
                                 <div class="track-artist">{{ artist_name }}</div>
                             </div>
 
-                            <a href="/track-delete/{{ tracks[i].id }}" class="delete"></a>
+                            <a href="#" class="delete" data-id="{{ tracks[i].id }}" style="text-decoration: none; color: red;"></a>
                         </div>
                         {% else %}
                         <div class="track-card empty">
@@ -92,6 +92,28 @@
             }
         });
     });
+
+    // удаление трека
+    document.querySelectorAll('.delete').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();  // отменяем переход по ссылке
+            const trackId = btn.getAttribute('data-id');
+
+            if (!confirm('Вы действительно хотите удалить этот трек?')) return;
+
+            const response = await fetch(`/api/tracks/${trackId}`, {
+                method: 'DELETE',
+                headers: { 'X-API-Key': '{{ api_key }}' }
+            });
+
+            if (response.ok) {
+                btn.closest('.top-item').remove();  // удаляем строку из DOM
+            } else {
+                alert('Ошибка при удалении трека');
+            }
+        });
+    });
+
 </script>
 
 {% endblock %}
