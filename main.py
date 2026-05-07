@@ -412,9 +412,17 @@ def profile():
     user_id = current_user.id
 
     with db_session.create_session() as db_sess:
-        artist_name = db_sess.query(User).get(user_id).username
+        user = db_sess.query(User).get(current_user.id)
+        artist_name = user.username
+        avatar_filename = user.avatar
         tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
         playlists = db_sess.query(Playlist).filter(Playlist.user_id == user_id).all()
+
+        avatar_path = None
+
+        if avatar_filename:
+            avatar_path = url_for('static', filename=f'uploads/imgs/{avatar_filename}')
+            print(avatar_path)
 
         tracks_count = len(tracks)
 
@@ -442,6 +450,7 @@ def profile():
             playlists=playlists,
             intop_total=intop_total,
             steps_playlists=steps_playlists,
+            avatar_path=avatar_path,
             api_key=os.getenv('ADMIN_API_KEY')
         )
 
@@ -504,8 +513,11 @@ def settings():
         user = db_sess.query(User).get(current_user.id)
         artist_name = user.username
         avatar_filename = user.avatar
+        tracks = db_sess.query(Track).filter(Track.users_id == current_user.id).all()
 
-        form = SettingsForm(data={"username": artist_name})
+    form = SettingsForm(data={"username": artist_name})
+
+    avatar_path = None
 
     if avatar_filename:
         avatar_path = url_for('static', filename=f'uploads/imgs/{avatar_filename}')
@@ -513,29 +525,41 @@ def settings():
 
     if form.validate_on_submit():
         image = form.image_file.data
+        username = form.username.data
 
-        extens = r'png|jpg|jpeg'  # проверка расширений
-        if not fullmatch(fr'.+\.({extens})', image.filename, IGNORECASE):
-            abort(400, message='Неподдерживаемый формат файла')
+        if image:
+            if avatar_path:
+                os.remove(avatar_path[1:])
 
-        filename = secure_filename(f'{current_user.id}_{int(time.time())}.png')  # даем файлу уникальное имя и сохраняем
+            extens = r'png|jpg|jpeg'  # проверка расширений
+            if not fullmatch(fr'.+\.({extens})', image.filename, IGNORECASE):
+                abort(400, message='Неподдерживаемый формат файла')
 
-        upload_folder = 'static/uploads/imgs'
-        filepath = os.path.join(upload_folder, filename)
-        image.save(filepath)
+            filename = secure_filename(
+                f'{current_user.id}_{int(time.time())}.png')  # даем файлу уникальное имя и сохраняем
 
-        with db_session.create_session() as db_sess:
-            user = db_sess.query(User).filter(User.id == current_user.id).first()
-            user.avatar = filename
-            db_sess.commit()
+            upload_folder = 'static/uploads/imgs'
+            filepath = os.path.join(upload_folder, filename)
+            image.save(filepath)
 
-        avatar_path = url_for('static', filename=f'uploads/imgs/{filename}')
+            with db_session.create_session() as db_sess:
+                user = db_sess.query(User).filter(User.id == current_user.id).first()
+                user.avatar = filename
+                db_sess.commit()
+
+            avatar_path = url_for('static', filename=f'uploads/imgs/{filename}')
+
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        user.username = username
+        db_sess.commit()
+        return redirect("/profile")
 
     return render_template(
         "settings.html",
         artist_name=artist_name,
         avatar_path=avatar_path,
         form=form,
+        tracks=tracks,
         api_key=os.getenv('ADMIN_API_KEY'),
     )
 

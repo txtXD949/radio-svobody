@@ -71,7 +71,7 @@ USERS = [
 ]
 
 # Путь к папке с аудиофайлами-заглушками
-AUDIO_PLACEHOLDER = 'uploads/snds/placeholder.mp3'
+AUDIO_PLACEHOLDER = 'static/uploads/snds/placeholder.mp3'
 
 
 def create_audio_placeholder():
