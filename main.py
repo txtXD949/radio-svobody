@@ -1,3 +1,4 @@
+import sqlalchemy.exc
 from flask import Flask, jsonify, redirect, render_template, send_from_directory, request
 from flask_restful import Api, abort
 from werkzeug.exceptions import HTTPException
@@ -28,7 +29,8 @@ from resources import (
     PlaylistTracksResource, PlaylistTrackResource,
     PlaylistListResource, PlaylistResource
 )
-from utils.forms import LoginForm, RegisterForm, TrackForm, PlaylistForm, SettingsForm
+from utils.forms import LoginForm, RegisterForm, TrackForm, PlaylistForm, SettingsForm, SettingsTrackForm, \
+    DeleteTrackForm
 from utils.mail_utils import send_conf_email, conf_token
 from utils.mail_init import mail
 from utils.scheduler import start_scheduler
@@ -419,6 +421,9 @@ def profile():
 
         steps = min(6, tracks_count)
 
+        steps_playlists = min(6, len(playlists))
+        print(steps_playlists)
+
         intop_total = 0
         likes_count = 0
         views_count = 0
@@ -438,6 +443,7 @@ def profile():
             views_count=views_count,
             playlists=playlists,
             intop_total=intop_total,
+            steps_playlists=steps_playlists,
             api_key=os.getenv('ADMIN_API_KEY')
         )
 
@@ -446,6 +452,10 @@ def profile():
 @login_required
 def profile_view(user_id):
     with db_session.create_session() as db_sess:
+
+        if user_id == current_user.id:
+            return redirect("/profile")
+
         artist_name = db_sess.query(User).get(user_id).username
         tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
         playlists = db_sess.query(Playlist).filter(Playlist.user_id == user_id).all()
@@ -493,44 +503,103 @@ def tracks_page(user_id):
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
-    form = SettingsForm()
-
     with db_session.create_session() as db_sess:
         user = db_sess.query(User).get(current_user.id)
         artist_name = user.username
         avatar_path = user.avatar
+        tracks = db_sess.query(Track).filter(Track.users_id == current_user.id).all()
 
-    form.username.data = artist_name
+        form = SettingsForm(data={"username": artist_name})
 
-    if avatar_path:
-        avatar_path = avatar_path.split("/")[-1]
-        print(avatar_path)
+        if avatar_path:
+            avatar_path = avatar_path.split("/")[-1]
 
-    if form.validate_on_submit():
-        image = form.image_file.data
+        if form.validate_on_submit():
+            image = form.image_file.data
+            username = form.username.data
 
-        extens = r'png|jpg|jpeg'  # проверка расширений
-        if not fullmatch(fr'.+\.({extens})', image.filename, IGNORECASE):
-            abort(400, message='Неподдерживаемый формат файла')
+            if image:
+                extens = r'png|jpg|jpeg'  # проверка расширений
+                if not fullmatch(fr'.+\.({extens})', image.filename, IGNORECASE):
+                    abort(400, message='Неподдерживаемый формат файла')
 
-        filename = secure_filename(
-            f'{current_user.id}_{int(time.time())}.png')  # даем файлу уникальное имя и сохраняем
+                filename = secure_filename(
+                    f'{current_user.id}_{int(time.time())}.png')  # даем файлу уникальное имя и сохраняем
 
-        filepath = f'uploads/imgs/{filename}'
-        image.save(filepath)
+                filepath = f'uploads/imgs/{filename}'
+                image.save(filepath)
 
-        with db_session.create_session() as db_sess:
+                user = db_sess.query(User).filter(User.id == current_user.id).first()
+                user.avatar = filepath
+                db_sess.commit()
             user = db_sess.query(User).filter(User.id == current_user.id).first()
-            user.avatar = filepath
+            user.username = username
             db_sess.commit()
 
-    return render_template(
-        "settings.html",
-        artist_name=artist_name,
-        avatar_path=avatar_path,
-        form=form,
-        api_key=os.getenv('ADMIN_API_KEY'),
-    )
+            return redirect("/profile")
+
+        return render_template(
+            "settings.html",
+            artist_name=artist_name,
+            avatar_path=avatar_path,
+            tracks=tracks,
+            form=form,
+            api_key=os.getenv('ADMIN_API_KEY'),
+        )
+
+
+@app.route('/settings/track/<int:track_id>', methods=['GET', 'POST'])
+@login_required
+def settings_track(track_id):
+    with db_session.create_session() as db_sess:
+        if db_sess.query(Track).filter(Track.id == track_id).one().users_id != current_user.id:
+            return redirect("/profile")
+
+        track = db_sess.query(Track).filter(Track.id == track_id).one()
+        track_name = track.title
+
+        form = SettingsTrackForm(data={"track_title": track_name})
+
+        if form.validate_on_submit():
+            new_track_title = form.track_title.data
+
+            print(new_track_title)
+
+            track.title = new_track_title
+            db_sess.commit()
+
+            return redirect("/profile")
+
+        return render_template(
+            "settings_track.html",
+            track=track,
+            form=form,
+            api_key=os.getenv('ADMIN_API_KEY'),
+        )
+
+
+@app.route('/track-delete/<int:track_id>', methods=['GET', 'POST'])
+@login_required
+def track_delete(track_id):
+    with db_session.create_session() as db_sess:
+        form = DeleteTrackForm()
+
+        if db_sess.query(Track).filter(Track.id == track_id).one().users_id != current_user.id:
+            return redirect("/profile")
+
+        track = db_sess.query(Track).filter(Track.id == track_id).one()
+
+        if form.validate_on_submit():
+            db_sess.delete(track)
+            db_sess.commit()
+            return redirect("/profile")
+
+        return render_template(
+            "track_delete.html",
+            form=form,
+            track=track,
+            api_key=os.getenv('ADMIN_API_KEY')
+        )
 
 
 @app.route('/playlists')

@@ -1,0 +1,22 @@
+{% extends "base2.html" %}
+
+{% block main %}
+
+<div class="profile-container">
+    <form action="" method="post" enctype="multipart/form-data">
+        {{ form.csrf_token }}
+
+        <div class="profile-container-statistics">
+            <div class="mb-3">
+                {{ form.track_title.label }}
+                {{ form.track_title(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="profile-container-statistics">
+            {{ form.submit(class="btn btn-primary w-100") }}
+        </div>
+    </form>
+</div>
+
+{% endblock %}

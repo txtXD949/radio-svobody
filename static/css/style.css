@@ -1405,3 +1405,15 @@ body.light-theme .theme-toggle {
     justify-content: space-around;
     align-items: center;
 }
+
+/* Для смены цвета мусорки в настройках */
+a.delete {
+    background: url("../imgs/delete.png");
+    display: block;
+    width: 50px;
+    height: 50px;
+}
+
+a.delete:hover {
+    background: url("../imgs/delete_active.png");
+}

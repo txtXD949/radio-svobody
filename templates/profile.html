@@ -102,10 +102,11 @@
 <div class="top-box" style="min-height: 100%">
     <div class="top-box-content">
         <div class="top-row">
-            <div class="top-left">
+            <div class="top-left" style="gap: 40px">
+                {% if tracks|length != 0 %}
                 <div class="top-items-list-double">
-                    {% for i in range( playlists|length ) %}
-                    <a href="/playlist/{{ playlists[i].id }}">
+                    {% for i in range( steps_playlists ) %}
+                    <a href="/playlist/{{ playlists[i].id }}" style="text-decoration: none">
                         <div class="playlist-card" data-id="{{ playlists[i].id }}">
                             <div class="playlist-info">
                                 <div class="playlist-title">{{ playlists[i].title }}</div>
@@ -113,12 +114,18 @@
                         </div>
                     </a>
                     {% endfor %}
-                    {% if tracks|length == 0 %}
-                    <div class="profile-container-statistics">
-                        <p style="padding-top: 40px; color: var(--text)">Тут пустовато...</p>
-                    </div>
-                    {% endif %}
                 </div>
+                <div class="profile-container-statistics">
+                    <a href="/playlists" style="text-decoration: none">
+                        <p>Все плейлисты</p>
+                    </a>
+                </div>
+                {% else %}
+                <div class="profile-container-statistics">
+                    <p style="padding-top: 40px; color: var(--text)">Тут пустовато...</p>
+                </div>
+                {% endif %}
+
             </div>
         </div>
     </div>
