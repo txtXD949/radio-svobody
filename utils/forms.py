@@ -57,6 +57,8 @@ class SettingsTrackForm(FlaskForm):
     track_title = StringField('Название трека', validators=[DataRequired()])
     submit = SubmitField('Подтвердить изменения')
 
-class DeleteTrackForm(FlaskForm):
-    """Форма удаления трека"""
-    submit = SubmitField('Удалить трек')
+class DeleteAccount(FlaskForm):
+    """Форма удаления аккаунта"""
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    i_realize = BooleanField('Я осознаю необратимость процесса')
+    submit = SubmitField('Удалить аккаунт')

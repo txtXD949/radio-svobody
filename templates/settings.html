@@ -9,7 +9,7 @@
             <div class="profile-container-statistics">
                 <div class="mb-3">
                     {{ form.last_password.label }}
-                    {{ form.last_password(class="form-control") }}
+                    {{ form.last_password(class="form-control", type="password") }}
                     {% for error in form.last_password.errors %}
                     <div class="alert alert-danger" role="alert">{{ error }}</div>
                     {% endfor %}
@@ -17,7 +17,7 @@
 
                 <div class="mb-3">
                     {{ form.new_password.label }}
-                    {{ form.new_password(class="form-control") }}
+                    {{ form.new_password(class="form-control", type="password") }}
                     {% for error in form.new_password.errors %}
                     <div class="alert alert-danger" role="alert">{{ error }}</div>
                     {% endfor %}
@@ -25,7 +25,7 @@
 
                 <div class="mb-3">
                     {{ form.new_password_repeat.label }}
-                    {{ form.new_password_repeat(class="form-control") }}
+                    {{ form.new_password_repeat(class="form-control", type="password") }}
                     {% for error in form.new_password_repeat.errors %}
                     <div class="alert alert-danger" role="alert">{{ error }}</div>
                     {% endfor %}
@@ -129,7 +129,7 @@
     <a href="/logout" style="text-decoration: none">
         <p>Выйти из аккаунта</p>
     </a>
-    <a href="/logout" style="text-decoration: none; color: red;">
+    <a href="/account-delete" style="text-decoration: none; color: red;">
         <p>Удалить аккаунт</p>
     </a>
 </div>

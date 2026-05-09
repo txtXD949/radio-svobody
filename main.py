@@ -19,6 +19,8 @@ from data.tracks import Track
 from data.dump import Dump
 from data.genres import Genre
 from data.playlists import Playlist
+from data.playlist_tracks import PlaylistTrack
+from data.likes import Like
 from resources import (
     TrackResource, TrackListResource, TrackLikeResource,
     UserResource, UserListResource,
@@ -29,7 +31,7 @@ from resources import (
     PlaylistListResource, PlaylistResource
 )
 from utils.forms import LoginForm, RegisterForm, TrackForm, PlaylistForm, SettingsForm, SettingsTrackForm, \
-    DeleteTrackForm
+    DeleteAccount
 from utils.mail_utils import send_conf_email, conf_token
 from utils.mail_init import mail
 from utils.scheduler import start_scheduler
@@ -639,6 +641,39 @@ def settings_track(track_id):
         )
 
 
+@app.route('/account-delete', methods=['GET', 'POST'])
+@login_required
+def account_delete():
+    form = DeleteAccount()
+
+    with db_session.create_session() as db_sess:
+        user = db_sess.query(User).get(current_user.id)
+
+    if form.validate_on_submit() and form.i_realize.data and user.check_password(form.password.data):
+        with db_session.create_session() as db_sess:
+            user = db_sess.query(User).get(current_user.id)
+            tracks = db_sess.query(Track).filter(Track.users_id == current_user.id).all()
+            track_ids = {track.id for track in tracks}
+            playlists = db_sess.query(Playlist).filter(Playlist.user_id == current_user.id).all()
+            playlists_ids = {track.id for track in tracks}
+            likes = db_sess.query(Like).filter(Like.user_id == current_user.id).all()
+            [db_sess.delete(playlist_track) for playlist_track in
+             db_sess.query(PlaylistTrack).filter(PlaylistTrack.playlist_id in playlists_ids).all()]
+            [db_sess.delete(track) for track in
+             db_sess.query(Dump).filter(Dump.track_id in track_ids).all()]
+            [db_sess.delete(like) for like in likes]
+            [db_sess.delete(playlist) for playlist in playlists]
+            [db_sess.delete(track) for track in tracks]
+            db_sess.delete(user)
+            db_sess.commit()
+            return redirect("/")
+
+
+    return render_template(
+        "account_delete.html",
+        form=form,
+        api_key=os.getenv('ADMIN_API_KEY'),
+    )
 
 
 @app.route('/playlists')
