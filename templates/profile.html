@@ -30,11 +30,11 @@
         <h1>{{ artist_name }}</h1>
 
         {% if avatar_path %}
-            <img src="{{ avatar_path }}" style="width: 350px; height: 350px; border-radius: 50%;">
-            {% else %}
-            <span class="avatar"
-                  style="width: 350px; height: 350px; font-size: 128px">{{ current_user.username[0]|upper }}</span>
-            {% endif %}
+        <img src="{{ avatar_path }}" style="width: 350px; height: 350px; border-radius: 50%;">
+        {% else %}
+        <span class="avatar"
+              style="width: 350px; height: 350px; font-size: 128px">{{ current_user.username[0]|upper }}</span>
+        {% endif %}
     </div>
 </div>
 

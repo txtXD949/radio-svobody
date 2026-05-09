@@ -456,15 +456,22 @@ def profile():
 
 
 @app.route('/profile/<int:user_id>')
-@login_required
 def profile_view(user_id):
     with db_session.create_session() as db_sess:
         if user_id == current_user.id:
             return redirect("/profile")
 
-        artist_name = db_sess.query(User).get(user_id).username
+        user = db_sess.query(User).get(user_id)
+        artist_name = user.username
         tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
         playlists = db_sess.query(Playlist).filter(Playlist.user_id == user_id).all()
+        avatar_filename = user.avatar
+
+        avatar_path = None
+
+        if avatar_filename:
+            avatar_path = url_for('static', filename=f'uploads/imgs/{avatar_filename}')
+            print(avatar_path)
 
         tracks_count = len(tracks)
 
@@ -489,6 +496,7 @@ def profile_view(user_id):
             views_count=views_count,
             playlists=playlists,
             intop_total=intop_total,
+            avatar_path=avatar_path,
             api_key=os.getenv('ADMIN_API_KEY')
         )
 
@@ -526,6 +534,43 @@ def settings():
     if form.validate_on_submit():
         image = form.image_file.data
         username = form.username.data
+
+        if form.last_password.data or form.new_password.data or form.new_password_repeat.data:
+            if not (form.last_password.data and form.new_password.data and form.new_password_repeat.data):
+                return render_template(
+                    "settings.html",
+                    message="Поля паролей должны быть заполнены!",
+                    artist_name=artist_name,
+                    avatar_path=avatar_path,
+                    form=form,
+                    tracks=tracks,
+                    api_key=os.getenv('ADMIN_API_KEY'),
+                )
+            elif not user.check_password(form.last_password.data):
+                return render_template(
+                    "settings.html",
+                    message="Неверный пароль!",
+                    artist_name=artist_name,
+                    avatar_path=avatar_path,
+                    form=form,
+                    tracks=tracks,
+                    api_key=os.getenv('ADMIN_API_KEY'),
+                )
+            elif form.new_password.data != form.new_password_repeat.data:
+                return render_template(
+                    "settings.html",
+                    message="Пароли не совпадают!",
+                    artist_name=artist_name,
+                    avatar_path=avatar_path,
+                    form=form,
+                    tracks=tracks,
+                    api_key=os.getenv('ADMIN_API_KEY'),
+                )
+            else:
+                with db_session.create_session() as db_sess:
+                    user = db_sess.query(User).filter(User.id == current_user.id).first()
+                    user.set_password(form.new_password.data)
+                    db_sess.commit()
 
         if image:
             if avatar_path:
@@ -592,6 +637,8 @@ def settings_track(track_id):
             form=form,
             api_key=os.getenv('ADMIN_API_KEY'),
         )
+
+
 
 
 @app.route('/playlists')

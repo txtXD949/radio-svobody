@@ -47,7 +47,9 @@
                                 </div>
                                 <div class="track-info">
                                     <div class="track-title">{{ top_tracks[i].title }}</div>
-                                    <div class="track-artist">{{ top_tracks[i].user.username }}</div>
+                                    <a href="/profile/{{ top_tracks[i].user.id }}" style="text-decoration: none">
+                                        <div class="track-artist">{{ top_tracks[i].user.username }}</div>
+                                    </a>
                                 </div>
                             </div>
                             <div class="item-likes">
@@ -101,8 +103,18 @@
                             <div class="item-rank">{{ i + 1 }}</div>
                             {% if i < top_artists|length %}
                             <div class="artist-card">
-                                <div class="artist-avatar"></div>
+                                <a href="/profile/{{ top_artists[i][0].id }}" style="text-decoration: none">
+                                    {% if top_artists[i][0].avatar %}
+                                    <img src="/static/uploads/imgs/{{ top_artists[i][0].avatar }}"
+                                         style="width: 50px; height: 50px; border-radius: 50%;">
+                                    {% else %}
+                                    <span class="avatar"
+                                          style="width: 50px; height: 50px; font-size: 22px">{{ top_artists[i][0].username[0]|upper }}</span>
+                                    {% endif %}
+                                </a>
+
                                 <div class="artist-name">{{ top_artists[i][0].username }}</div>
+
                             </div>
                             <div class="item-likes">
                                 <div class="heart-icon"></div>

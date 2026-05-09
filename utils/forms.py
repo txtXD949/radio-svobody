@@ -43,6 +43,9 @@ class PlaylistForm(FlaskForm):
 class SettingsForm(FlaskForm):
     """Форма настроек"""
     username = StringField('Имя', validators=[DataRequired()])
+    last_password = PasswordField('Старый пароль')
+    new_password = PasswordField('Новый пароль')
+    new_password_repeat = PasswordField('Повтор пароля')
     image_file = FileField('Изображение (.png)', validators=[
         FileAllowed(['png', 'jpg', 'jpeg'], 'Изображение PNG')  # разрешенные файлы
     ])

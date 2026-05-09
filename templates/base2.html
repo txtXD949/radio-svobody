@@ -34,13 +34,15 @@
 
     <!-- аватар/ссылка на вход -->
     {% if current_user.is_authenticated %}
-    {% if current_user.avatar %}
-    <img src="/static/uploads/imgs/{{ current_user.avatar }}"
-         style="width: 50px; height: 50px; border-radius: 50%;">
-    {% else %}
-    <span class="avatar"
-          style="width: 50px; height: 50px; font-size: 128px">{{ current_user.username[0]|upper }}</span>
-    {% endif %}
+    <a href="/profile">
+        {% if current_user.avatar %}
+        <img src="/static/uploads/imgs/{{ current_user.avatar }}"
+             style="width: 50px; height: 50px; border-radius: 50%;">
+        {% else %}
+        <span class="avatar"
+              style="width: 50px; height: 50px; font-size: 22px">{{ current_user.username[0]|upper }}</span>
+        {% endif %}
+    </a>
     {% else %}
     <a href="/login" class="login-link">Войти</a>
     {% endif %}
