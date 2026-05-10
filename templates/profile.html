@@ -3,6 +3,7 @@
 {% block main %}
 
 <div class="profile-container">
+    <!-- Статистика пользователя (Лайки, прослушивания, выходы в топ) -->
     <div class="profile-container-statistics">
         <div class="item-likes" style="gap: 44px">
             <div class="heart-icon"></div>
@@ -25,6 +26,7 @@
         </div>
     </div>
 
+    <!-- Аватарка и имя -->
     <div class="profile-container-statistics">
 
         <h1>{{ artist_name }}</h1>
@@ -42,6 +44,7 @@
     <span class="top-label">ТРЕКИ</span>
 </div>
 
+<!-- Треки пользователя -->
 <div class="top-box" style="min-height: 100%">
     <div class="top-box-content">
         <div class="top-row">
@@ -103,6 +106,7 @@
     <span class="top-label">ПЛЕЙЛИСТЫ</span>
 </div>
 
+<!-- Плейлисты пользователя -->
 <div class="top-box" style="min-height: 100%">
     <div class="top-box-content">
         <div class="top-row">
@@ -135,7 +139,9 @@
     </div>
 </div>
 
+<!-- Плейлисты пользователя -->
 <script>
+    // обработчики кнопок воспроизведения треков
     document.querySelectorAll('.track-play').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const trackId = btn.getAttribute('data-id');

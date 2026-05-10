@@ -5,8 +5,10 @@
 <form action="" method="post" enctype="multipart/form-data">
     {{ form.csrf_token }}
     <div class="profile-container" style="justify-content: center; gap: 132px">
+        <!-- Смена пароля -->
         <div class="profile-container-statistics">
             <div class="profile-container-statistics">
+                <!-- Старый пароль -->
                 <div class="mb-3">
                     {{ form.last_password.label }}
                     {{ form.last_password(class="form-control", type="password") }}
@@ -15,6 +17,7 @@
                     {% endfor %}
                 </div>
 
+                <!-- Новый пароль -->
                 <div class="mb-3">
                     {{ form.new_password.label }}
                     {{ form.new_password(class="form-control", type="password") }}
@@ -23,6 +26,7 @@
                     {% endfor %}
                 </div>
 
+                <!-- Повтор нового пароля -->
                 <div class="mb-3">
                     {{ form.new_password_repeat.label }}
                     {{ form.new_password_repeat(class="form-control", type="password") }}
@@ -32,14 +36,13 @@
                 </div>
 
                 <!-- сообщение об ошибке (неверный пароль/пустые поля) -->
-                <div>{{ message }}</div>
+                <div style="color: #a1a1a1">{{ message }}</div>
             </div>
         </div>
 
-
+        <!-- Смена имени и аватарки -->
         <div class="profile-container-statistics">
-
-
+            <!-- Смена имени -->
             <div class="profile-container-statistics">
                 <div class="mb-3">
                     {{ form.username.label }}
@@ -48,6 +51,7 @@
             </div>
 
             <div class="profile-container-statistics">
+                <!-- Аватарка -->
                 {% if avatar_path %}
                 <img src="{{ avatar_path }}" style="width: 350px; height: 350px; border-radius: 50%;">
                 {% else %}
@@ -56,6 +60,7 @@
                 {% endif %}
                 {{ form.hidden_tag() }}
 
+                <!-- Форма выбора файла аватарки -->
                 <div class="mb-3">
                     {{ form.image_file.label }}
                     {{ form.image_file(class="form-control", accept=".png,.jpg,.jpeg") }}
@@ -64,6 +69,7 @@
         </div>
     </div>
 
+    <!-- Подтверждение -->
     <div class="profile-container">
         <div class="profile-container-statistics" style="width: 20%">
             {{ form.submit(class="btn btn-primary w-100") }}
@@ -71,6 +77,7 @@
     </div>
 </form>
 
+<!-- Треки пользователя -->
 {% if tracks|length != 0 %}
 
 <div class="top-box" style="min-height: 100%">
@@ -95,6 +102,7 @@
                                 <div class="track-artist">{{ artist_name }}</div>
                             </div>
 
+                            <!-- Кнопка удаления трека -->
                             <a href="#" class="delete" data-id="{{ tracks[i].id }}"
                                style="text-decoration: none; color: red;">
                                 <div class="playlist-actions">
@@ -126,15 +134,19 @@
 {% endif %}
 
 <div class="profile-container" style="justify-content: center; gap: 132px">
+    <!-- Кнопка выхода из аккаунта -->
     <a href="/logout" style="text-decoration: none">
         <p>Выйти из аккаунта</p>
     </a>
+
+    <!-- Кнопка удаления аккаунта -->
     <a href="/account-delete" style="text-decoration: none; color: red;">
         <p>Удалить аккаунт</p>
     </a>
 </div>
 
 <script>
+    // обработчики кнопок воспроизведения треков
     document.querySelectorAll('.track-play').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const trackId = btn.getAttribute('data-id');

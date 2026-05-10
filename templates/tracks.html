@@ -2,6 +2,7 @@
 
 {% block main %}
 
+<!-- Все треки пользователя -->
 <div class="top-box" style="min-height: 100%">
     <div class="top-box-content">
         <div class="top-row">
@@ -54,6 +55,7 @@
 </div>
 
 <script>
+    // обработчики кнопок воспроизведения треков
     document.querySelectorAll('.track-play').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const trackId = btn.getAttribute('data-id');
