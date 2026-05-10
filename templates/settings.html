@@ -2,4 +2,118 @@
 
 {% block main %}
 
+<div class="profile-container">
+    <form action="" method="post" enctype="multipart/form-data">
+        {{ form.csrf_token }}
+
+        <div class="profile-container-statistics">
+            <div class="mb-3">
+                {{ form.username.label }}
+                {{ form.username(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="profile-container-statistics">
+            {% if avatar_path %}
+            <img src="{{ avatar_path }}" style="width: 350px; height: 350px; border-radius: 50%;">
+            {% else %}
+            <span class="avatar"
+                  style="width: 350px; height: 350px; font-size: 128px">{{ current_user.username[0]|upper }}</span>
+            {% endif %}
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                {{ form.image_file.label }}
+                {{ form.image_file(class="form-control", accept=".png,.jpg,.jpeg") }}
+            </div>
+
+            {{ form.submit(class="btn btn-primary w-100") }}
+        </div>
+    </form>
+</div>
+
+<div class="top-box" style="min-height: 100%">
+    <div class="top-box-content">
+        <div class="top-row">
+            <div class="top-left">
+                <div class="top-items-list-double">
+                    {% for i in range( tracks|length ) %}
+
+                    <div class="top-item">
+                        {% if i < tracks|length %}
+                        <div class="track-card">
+                            <div class="track-play" data-id="{{ tracks[i].id }}">
+                                <div class="play-circle">
+                                    <div class="play-triangle"></div>
+                                </div>
+                            </div>
+                            <div class="track-info">
+                                <a href="/settings/track/{{ tracks[i].id }}" style="text-decoration: none">
+                                    <div class="track-title">{{ tracks[i].title }}</div>
+                                </a>
+                                <div class="track-artist">{{ artist_name }}</div>
+                            </div>
+
+                            <a href="#" class="delete" data-id="{{ tracks[i].id }}" style="text-decoration: none; color: red;"></a>
+                        </div>
+                        {% else %}
+                        <div class="track-card empty">
+                            <div class="track-play">
+                                <div class="play-circle"></div>
+                            </div>
+                            <div class="track-info">
+                                <div class="track-title empty"></div>
+                                <div class="track-artist empty"></div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.track-play').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const trackId = btn.getAttribute('data-id');
+            if (trackId) {
+                const trackCard = btn.closest('.track-card');
+                const trackTitle = trackCard.querySelector('.track-title').textContent;
+
+                player.playSingleTrack({
+                    id: trackId,
+                    title: trackTitle,
+                    cover_url: null
+                });
+            }
+        });
+    });
+
+    // удаление трека
+    document.querySelectorAll('.delete').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();  // отменяем переход по ссылке
+            const trackId = btn.getAttribute('data-id');
+
+            if (!confirm('Вы действительно хотите удалить этот трек?')) return;
+
+            const response = await fetch(`/api/tracks/${trackId}`, {
+                method: 'DELETE',
+                headers: { 'X-API-Key': '{{ api_key }}' }
+            });
+
+            if (response.ok) {
+                btn.closest('.top-item').remove();  // удаляем строку из DOM
+            } else {
+                alert('Ошибка при удалении трека');
+            }
+        });
+    });
+
+</script>
+
 {% endblock %}

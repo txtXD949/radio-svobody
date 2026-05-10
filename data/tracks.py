@@ -18,6 +18,7 @@ class Track(SqlAlchemyBase, SerializerMixin):
     likes_count = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     views_count = sqlalchemy.Column(sqlalchemy.Integer, default=0)  # прослушивания трека
     intop_count = sqlalchemy.Column(sqlalchemy.Integer, default=0)
+    cover = sqlalchemy.Column(sqlalchemy.String)
     created_at = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now())
 
     genre = orm.relationship('Genre')

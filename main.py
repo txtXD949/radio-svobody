@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, redirect, render_template, send_from_directory, request
+from flask import Flask, jsonify, redirect, render_template, send_from_directory, request, url_for
 from flask_restful import Api, abort
 from werkzeug.exceptions import HTTPException
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -28,7 +28,8 @@ from resources import (
     PlaylistTracksResource, PlaylistTrackResource,
     PlaylistListResource, PlaylistResource
 )
-from utils.forms import LoginForm, RegisterForm, TrackForm, PlaylistForm
+from utils.forms import LoginForm, RegisterForm, TrackForm, PlaylistForm, SettingsForm, SettingsTrackForm, \
+    DeleteTrackForm
 from utils.mail_utils import send_conf_email, conf_token
 from utils.mail_init import mail
 from utils.scheduler import start_scheduler
@@ -62,9 +63,9 @@ app.config['MAIL_SERVER'] = 'smtp.yandex.ru'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USERNAME'] = 'radio.svobodi532@yandex.ru'
+app.config['MAIL_USERNAME'] = 'rezistorka@ya.ru'
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = 'radio.svobodi532@yandex.ru'
+app.config['MAIL_DEFAULT_SENDER'] = 'rezistorka@ya.ru'
 
 mail.init_app(app)
 
@@ -163,9 +164,16 @@ def register():
             db_sess.add(user)
             db_sess.commit()
 
-        send_conf_email(user.email, user.username)  # отправка письма с подтверждением
+            # сохраняем id и данные до закрытия сессии
+            user_id = user.id
+            user_email = user.email
+            user_username = user.username
 
-        login_user(user)  # авторизация
+        # отправка письма с подтверждением (используем сохранённые данные)
+        send_conf_email(user_email, user_username)
+
+        # загружаем пользователя заново через user_loader
+        login_user(load_user(user_id))  # авторизация
         return redirect('/confirm_wait')
     return render_template('register.html', form=form, title='Регистрация')
 
@@ -266,7 +274,7 @@ def update_track():
             abort(400, message='Неподдерживаемый формат файла')
 
         filename = secure_filename(f'{current_user.id}_{int(time.time())}.mp3')  # даем файлу уникальное имя и сохраняем
-        filepath = f'uploads/snds/{filename}'
+        filepath = f'static/uploads/snds/{filename}'
         audio.save(filepath)
 
         with db_session.create_session() as db_sess:
@@ -404,13 +412,23 @@ def profile():
     user_id = current_user.id
 
     with db_session.create_session() as db_sess:
-        artist_name = db_sess.query(User).get(user_id).username
+        user = db_sess.query(User).get(current_user.id)
+        artist_name = user.username
+        avatar_filename = user.avatar
         tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
         playlists = db_sess.query(Playlist).filter(Playlist.user_id == user_id).all()
+
+        avatar_path = None
+
+        if avatar_filename:
+            avatar_path = url_for('static', filename=f'uploads/imgs/{avatar_filename}')
+            print(avatar_path)
 
         tracks_count = len(tracks)
 
         steps = min(6, tracks_count)
+
+        steps_playlists = min(6, len(playlists))
 
         intop_total = 0
         likes_count = 0
@@ -431,6 +449,8 @@ def profile():
             views_count=views_count,
             playlists=playlists,
             intop_total=intop_total,
+            steps_playlists=steps_playlists,
+            avatar_path=avatar_path,
             api_key=os.getenv('ADMIN_API_KEY')
         )
 
@@ -439,6 +459,9 @@ def profile():
 @login_required
 def profile_view(user_id):
     with db_session.create_session() as db_sess:
+        if user_id == current_user.id:
+            return redirect("/profile")
+
         artist_name = db_sess.query(User).get(user_id).username
         tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
         playlists = db_sess.query(Playlist).filter(Playlist.user_id == user_id).all()
@@ -483,13 +506,91 @@ def tracks_page(user_id):
         )
 
 
-@app.route('/settings')
+@app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
     with db_session.create_session() as db_sess:
+        user = db_sess.query(User).get(current_user.id)
+        artist_name = user.username
+        avatar_filename = user.avatar
+        tracks = db_sess.query(Track).filter(Track.users_id == current_user.id).all()
+
+    form = SettingsForm(data={"username": artist_name})
+
+    avatar_path = None
+
+    if avatar_filename:
+        avatar_path = url_for('static', filename=f'uploads/imgs/{avatar_filename}')
+        print(avatar_path)
+
+    if form.validate_on_submit():
+        image = form.image_file.data
+        username = form.username.data
+
+        if image:
+            if avatar_path:
+                os.remove(avatar_path[1:])
+
+            extens = r'png|jpg|jpeg'  # проверка расширений
+            if not fullmatch(fr'.+\.({extens})', image.filename, IGNORECASE):
+                abort(400, message='Неподдерживаемый формат файла')
+
+            filename = secure_filename(
+                f'{current_user.id}_{int(time.time())}.png')  # даем файлу уникальное имя и сохраняем
+
+            upload_folder = 'static/uploads/imgs'
+            filepath = os.path.join(upload_folder, filename)
+            image.save(filepath)
+
+            with db_session.create_session() as db_sess:
+                user = db_sess.query(User).filter(User.id == current_user.id).first()
+                user.avatar = filename
+                db_sess.commit()
+
+            avatar_path = url_for('static', filename=f'uploads/imgs/{filename}')
+
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        user.username = username
+        db_sess.commit()
+        return redirect("/profile")
+
+    return render_template(
+        "settings.html",
+        artist_name=artist_name,
+        avatar_path=avatar_path,
+        form=form,
+        tracks=tracks,
+        api_key=os.getenv('ADMIN_API_KEY'),
+    )
+
+
+@app.route('/settings/track/<int:track_id>', methods=['GET', 'POST'])
+@login_required
+def settings_track(track_id):
+    with db_session.create_session() as db_sess:
+        if db_sess.query(Track).filter(Track.id == track_id).one().users_id != current_user.id:
+            return redirect("/profile")
+
+        track = db_sess.query(Track).filter(Track.id == track_id).one()
+        track_name = track.title
+
+        form = SettingsTrackForm(data={"track_title": track_name})
+
+        if form.validate_on_submit():
+            new_track_title = form.track_title.data
+
+            print(new_track_title)
+
+            track.title = new_track_title
+            db_sess.commit()
+
+            return redirect("/profile")
+
         return render_template(
-            "settings.html",
-            api_key=os.getenv('ADMIN_API_KEY')
+            "settings_track.html",
+            track=track,
+            form=form,
+            api_key=os.getenv('ADMIN_API_KEY'),
         )
 
 
@@ -561,9 +662,9 @@ if __name__ == '__main__':
         if not session.query(ApiKey).first():  # проверка, что ключ один
             create_apikey('ADMIN')
 
-    if "uploads" not in os.listdir():
-        os.mkdir("uploads")
-        os.mkdir("uploads/snds")
-        os.mkdir("uploads/imgs")
+    if "uploads" not in os.listdir('static'):
+        os.mkdir("static/uploads")
+        os.mkdir("static/uploads/snds")
+        os.mkdir("static/uploads/imgs")
 
     app.run(host='127.0.0.1', port=5000)  # запуск сервера

@@ -14,6 +14,7 @@ class User(SqlAlchemyBase, SerializerMixin, UserMixin):
     username = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
     email = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
     password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    avatar = sqlalchemy.Column(sqlalchemy.String)
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now())
 
     confirmed = sqlalchemy.Column(sqlalchemy.Boolean, default=False)

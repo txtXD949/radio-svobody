@@ -32,13 +32,17 @@
     <!-- кнопка смены темы (светлая/тёмная) -->
     <button class="theme-toggle"></button>
 
-     <!-- аватар/ссылка на вход -->
+    <!-- аватар/ссылка на вход -->
     {% if current_user.is_authenticated %}
-        <a href="/profile">
-            <span class="avatar">{{ current_user.username[0]|upper }}</span>
-        </a>
+    {% if current_user.avatar %}
+    <img src="/static/uploads/imgs/{{ current_user.avatar }}"
+         style="width: 50px; height: 50px; border-radius: 50%;">
     {% else %}
-        <a href="/login" class="login-link">Войти</a>
+    <span class="avatar"
+          style="width: 50px; height: 50px; font-size: 128px">{{ current_user.username[0]|upper }}</span>
+    {% endif %}
+    {% else %}
+    <a href="/login" class="login-link">Войти</a>
     {% endif %}
 </div>
 
@@ -94,8 +98,10 @@
             <a href="/about#donate">Поддержать нас</a>
         </div>
         <div class="footer-social">
-            <a href="https://t.me/radliber" class="social-link telegram"><img src="../static/imgs/telegram_icon.jpg" width="50px"></a>
-            <a href="https://discord.gg/GjpArrmC" class="social-link discord"><img src="../static/imgs/discord_icon.jpg" width="50px"></a>
+            <a href="https://t.me/radliber" class="social-link telegram"><img src="/static/imgs/telegram_icon.jpg"
+                                                                              width="50px"></a>
+            <a href="https://discord.gg/GjpArrmC" class="social-link discord"><img src="/static/imgs/discord_icon.jpg"
+                                                                                   width="50px"></a>
         </div>
     </div>
 </footer>
