@@ -5,10 +5,12 @@
     {{ form.csrf_token }}
     <div class="profile-container">
         <div class="profile-container" style="flex-direction: column; width: 30%">
+            <!-- Кнопка удаления аккаунта -->
             <div class="profile-container-statistics">
                 <h1>УДАЛЕНИЕ АККАУНТА</h1>
             </div>
 
+            <!-- Пароль -->
             <div class="mb-3">
                 {{ form.password.label }}
                 {{ form.password(class="form-control") }}
@@ -16,10 +18,14 @@
                 <div class="alert alert-danger" role="alert">{{ error }}</div>
                 {% endfor %}
             </div>
+
+            <!-- Чек-бокс подтверждения удаления аккаунта -->
             <div class="form-check">
                 {{ form.i_realize(class="form-check-input") }}
                 {{ form.i_realize.label(class="form-check-label") }}
             </div>
+
+            <!-- Подтверждение удаления аккаунта -->
             {{ form.submit(class="btn btn-primary w-100") }}
         </div>
     </div>

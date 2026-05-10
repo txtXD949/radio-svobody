@@ -411,6 +411,8 @@ def subgenre_page(subgenre_name):
 @app.route('/profile')
 @login_required
 def profile():
+    """Страница профиля пользователя"""
+
     user_id = current_user.id
 
     with db_session.create_session() as db_sess:
@@ -421,17 +423,16 @@ def profile():
         playlists = db_sess.query(Playlist).filter(Playlist.user_id == user_id).all()
 
         avatar_path = None
-
         if avatar_filename:
             avatar_path = url_for('static', filename=f'uploads/imgs/{avatar_filename}')
             print(avatar_path)
 
         tracks_count = len(tracks)
-
         steps = min(6, tracks_count)
 
         steps_playlists = min(6, len(playlists))
 
+        # Данные статистики
         intop_total = 0
         likes_count = 0
         views_count = 0
@@ -459,6 +460,8 @@ def profile():
 
 @app.route('/profile/<int:user_id>')
 def profile_view(user_id):
+    """Страница профиля пользователя user_id"""
+
     with db_session.create_session() as db_sess:
         if user_id == current_user.id:
             return redirect("/profile")
@@ -470,15 +473,14 @@ def profile_view(user_id):
         avatar_filename = user.avatar
 
         avatar_path = None
-
         if avatar_filename:
             avatar_path = url_for('static', filename=f'uploads/imgs/{avatar_filename}')
             print(avatar_path)
 
         tracks_count = len(tracks)
-
         steps = min(6, tracks_count)
 
+        # Данные статистики
         intop_total = 0
         likes_count = 0
         views_count = 0
@@ -506,6 +508,8 @@ def profile_view(user_id):
 @app.route('/tracks/<int:user_id>')
 @login_required
 def tracks_page(user_id):
+    """Страница просмотра всех выложенных треков"""
+
     with db_session.create_session() as db_sess:
         tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
 
@@ -519,6 +523,8 @@ def tracks_page(user_id):
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
+    """Страница настроек"""
+
     with db_session.create_session() as db_sess:
         user = db_sess.query(User).get(current_user.id)
         artist_name = user.username
@@ -533,10 +539,12 @@ def settings():
         avatar_path = url_for('static', filename=f'uploads/imgs/{avatar_filename}')
         print(avatar_path)
 
+    # Обработка подтверждения
     if form.validate_on_submit():
         image = form.image_file.data
         username = form.username.data
 
+        # Логика смены пароля
         if form.last_password.data or form.new_password.data or form.new_password_repeat.data:
             if not (form.last_password.data and form.new_password.data and form.new_password_repeat.data):
                 return render_template(
@@ -574,6 +582,7 @@ def settings():
                     user.set_password(form.new_password.data)
                     db_sess.commit()
 
+        # Логика смены аватара
         if image:
             if avatar_path:
                 os.remove(avatar_path[1:])
@@ -596,6 +605,7 @@ def settings():
 
             avatar_path = url_for('static', filename=f'uploads/imgs/{filename}')
 
+        # Смена имени
         user = db_sess.query(User).filter(User.id == current_user.id).first()
         user.username = username
         db_sess.commit()
@@ -614,6 +624,8 @@ def settings():
 @app.route('/settings/track/<int:track_id>', methods=['GET', 'POST'])
 @login_required
 def settings_track(track_id):
+    """Страница настроек конкретного трека"""
+
     with db_session.create_session() as db_sess:
         if db_sess.query(Track).filter(Track.id == track_id).one().users_id != current_user.id:
             return redirect("/profile")
@@ -625,8 +637,6 @@ def settings_track(track_id):
 
         if form.validate_on_submit():
             new_track_title = form.track_title.data
-
-            print(new_track_title)
 
             track.title = new_track_title
             db_sess.commit()
@@ -644,11 +654,14 @@ def settings_track(track_id):
 @app.route('/account-delete', methods=['GET', 'POST'])
 @login_required
 def account_delete():
+    """Страница удаления аккаунта"""
+
     form = DeleteAccount()
 
     with db_session.create_session() as db_sess:
         user = db_sess.query(User).get(current_user.id)
 
+    # Полное удаление данных пользователя при подтверждении с чек-боксом
     if form.validate_on_submit() and form.i_realize.data and user.check_password(form.password.data):
         with db_session.create_session() as db_sess:
             user = db_sess.query(User).get(current_user.id)
