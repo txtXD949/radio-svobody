@@ -1,6 +1,7 @@
 from flask_restful import Resource, abort
 from flask import jsonify, request
 from data import db_session
+from data.playlist_tracks import PlaylistTrack
 from data.tracks import Track
 from data.likes import Like
 from .track_parser import track_parser
@@ -27,6 +28,9 @@ class TrackResource(Resource):
             track = db_sess.query(Track).get(track_id)
             if not track:
                 abort(404, message=f'Track {track_id} not found')
+
+            db_sess.query(PlaylistTrack).filter(PlaylistTrack.track_id == track_id).delete()
+
             db_sess.delete(track)
             db_sess.commit()
             return jsonify({'success': 'OK'})
