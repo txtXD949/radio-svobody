@@ -764,5 +764,5 @@ if __name__ == '__main__':
         os.mkdir("static/uploads/imgs")
 
     # app.run(host='127.0.0.1', port=5000)  # запуск сервера
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 80))
     serve(app, host='0.0.0.0', port=port)

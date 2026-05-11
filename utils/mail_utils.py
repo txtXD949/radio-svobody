@@ -27,7 +27,7 @@ def conf_token(token, expiration=3600):
 def send_conf_email(user_email, username):
     """Отправляет письмо со ссылкой для подтверждения email"""
     token = generate_conf_token(user_email)
-    conf_url = f'http://127.0.0.1:5000/confirm/{token}'  # TODO: потом свой домен вписать
+    conf_url = f'http://rezistorka.ru/confirm/{token}'
 
     # HTML-тело письма
     html = f"""
