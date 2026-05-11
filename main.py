@@ -459,6 +459,7 @@ def profile():
 
 
 @app.route('/profile/<int:user_id>')
+@login_required
 def profile_view(user_id):
     """Страница профиля пользователя user_id"""
 
