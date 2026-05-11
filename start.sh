@@ -1,6 +1,6 @@
 #!/bin/bash
 cd rezistorka # Your app working directory
-export PORT=5000
+export PORT=8080
 export PYTHONNOUSERSITE=1  # Отключает user site-packages
 export PIP_USER=false
 # Очищаем старую проблемную venv если есть
