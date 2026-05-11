@@ -6,6 +6,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
+from waitress import serve
 from dotenv import load_dotenv
 import os
 from random import choice
@@ -19,6 +20,8 @@ from data.tracks import Track
 from data.dump import Dump
 from data.genres import Genre
 from data.playlists import Playlist
+from data.playlist_tracks import PlaylistTrack
+from data.likes import Like
 from resources import (
     TrackResource, TrackListResource, TrackLikeResource,
     UserResource, UserListResource,
@@ -29,7 +32,7 @@ from resources import (
     PlaylistListResource, PlaylistResource
 )
 from utils.forms import LoginForm, RegisterForm, TrackForm, PlaylistForm, SettingsForm, SettingsTrackForm, \
-    DeleteTrackForm
+    DeleteAccount
 from utils.mail_utils import send_conf_email, conf_token
 from utils.mail_init import mail
 from utils.scheduler import start_scheduler
@@ -409,6 +412,8 @@ def subgenre_page(subgenre_name):
 @app.route('/profile')
 @login_required
 def profile():
+    """Страница профиля пользователя"""
+
     user_id = current_user.id
 
     with db_session.create_session() as db_sess:
@@ -419,17 +424,16 @@ def profile():
         playlists = db_sess.query(Playlist).filter(Playlist.user_id == user_id).all()
 
         avatar_path = None
-
         if avatar_filename:
             avatar_path = url_for('static', filename=f'uploads/imgs/{avatar_filename}')
             print(avatar_path)
 
         tracks_count = len(tracks)
-
         steps = min(6, tracks_count)
 
         steps_playlists = min(6, len(playlists))
 
+        # Данные статистики
         intop_total = 0
         likes_count = 0
         views_count = 0
@@ -458,18 +462,27 @@ def profile():
 @app.route('/profile/<int:user_id>')
 @login_required
 def profile_view(user_id):
+    """Страница профиля пользователя user_id"""
+
     with db_session.create_session() as db_sess:
         if user_id == current_user.id:
             return redirect("/profile")
 
-        artist_name = db_sess.query(User).get(user_id).username
+        user = db_sess.query(User).get(user_id)
+        artist_name = user.username
         tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
         playlists = db_sess.query(Playlist).filter(Playlist.user_id == user_id).all()
+        avatar_filename = user.avatar
+
+        avatar_path = None
+        if avatar_filename:
+            avatar_path = url_for('static', filename=f'uploads/imgs/{avatar_filename}')
+            print(avatar_path)
 
         tracks_count = len(tracks)
-
         steps = min(6, tracks_count)
 
+        # Данные статистики
         intop_total = 0
         likes_count = 0
         views_count = 0
@@ -489,6 +502,7 @@ def profile_view(user_id):
             views_count=views_count,
             playlists=playlists,
             intop_total=intop_total,
+            avatar_path=avatar_path,
             api_key=os.getenv('ADMIN_API_KEY')
         )
 
@@ -496,6 +510,8 @@ def profile_view(user_id):
 @app.route('/tracks/<int:user_id>')
 @login_required
 def tracks_page(user_id):
+    """Страница просмотра всех выложенных треков"""
+
     with db_session.create_session() as db_sess:
         tracks = db_sess.query(Track).filter(Track.users_id == user_id).all()
 
@@ -509,6 +525,8 @@ def tracks_page(user_id):
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
+    """Страница настроек"""
+
     with db_session.create_session() as db_sess:
         user = db_sess.query(User).get(current_user.id)
         artist_name = user.username
@@ -523,10 +541,50 @@ def settings():
         avatar_path = url_for('static', filename=f'uploads/imgs/{avatar_filename}')
         print(avatar_path)
 
+    # Обработка подтверждения
     if form.validate_on_submit():
         image = form.image_file.data
         username = form.username.data
 
+        # Логика смены пароля
+        if form.last_password.data or form.new_password.data or form.new_password_repeat.data:
+            if not (form.last_password.data and form.new_password.data and form.new_password_repeat.data):
+                return render_template(
+                    "settings.html",
+                    message="Поля паролей должны быть заполнены!",
+                    artist_name=artist_name,
+                    avatar_path=avatar_path,
+                    form=form,
+                    tracks=tracks,
+                    api_key=os.getenv('ADMIN_API_KEY'),
+                )
+            elif not user.check_password(form.last_password.data):
+                return render_template(
+                    "settings.html",
+                    message="Неверный пароль!",
+                    artist_name=artist_name,
+                    avatar_path=avatar_path,
+                    form=form,
+                    tracks=tracks,
+                    api_key=os.getenv('ADMIN_API_KEY'),
+                )
+            elif form.new_password.data != form.new_password_repeat.data:
+                return render_template(
+                    "settings.html",
+                    message="Пароли не совпадают!",
+                    artist_name=artist_name,
+                    avatar_path=avatar_path,
+                    form=form,
+                    tracks=tracks,
+                    api_key=os.getenv('ADMIN_API_KEY'),
+                )
+            else:
+                with db_session.create_session() as db_sess:
+                    user = db_sess.query(User).filter(User.id == current_user.id).first()
+                    user.set_password(form.new_password.data)
+                    db_sess.commit()
+
+        # Логика смены аватара
         if image:
             if avatar_path:
                 os.remove(avatar_path[1:])
@@ -549,6 +607,7 @@ def settings():
 
             avatar_path = url_for('static', filename=f'uploads/imgs/{filename}')
 
+        # Смена имени
         user = db_sess.query(User).filter(User.id == current_user.id).first()
         user.username = username
         db_sess.commit()
@@ -567,6 +626,8 @@ def settings():
 @app.route('/settings/track/<int:track_id>', methods=['GET', 'POST'])
 @login_required
 def settings_track(track_id):
+    """Страница настроек конкретного трека"""
+
     with db_session.create_session() as db_sess:
         if db_sess.query(Track).filter(Track.id == track_id).one().users_id != current_user.id:
             return redirect("/profile")
@@ -579,8 +640,6 @@ def settings_track(track_id):
         if form.validate_on_submit():
             new_track_title = form.track_title.data
 
-            print(new_track_title)
-
             track.title = new_track_title
             db_sess.commit()
 
@@ -592,6 +651,43 @@ def settings_track(track_id):
             form=form,
             api_key=os.getenv('ADMIN_API_KEY'),
         )
+
+
+@app.route('/account-delete', methods=['GET', 'POST'])
+@login_required
+def account_delete():
+    """Страница удаления аккаунта"""
+
+    form = DeleteAccount()
+
+    with db_session.create_session() as db_sess:
+        user = db_sess.query(User).get(current_user.id)
+
+    # Полное удаление данных пользователя при подтверждении с чек-боксом
+    if form.validate_on_submit() and form.i_realize.data and user.check_password(form.password.data):
+        with db_session.create_session() as db_sess:
+            user = db_sess.query(User).get(current_user.id)
+            tracks = db_sess.query(Track).filter(Track.users_id == current_user.id).all()
+            track_ids = {track.id for track in tracks}
+            playlists = db_sess.query(Playlist).filter(Playlist.user_id == current_user.id).all()
+            playlists_ids = {track.id for track in tracks}
+            likes = db_sess.query(Like).filter(Like.user_id == current_user.id).all()
+            [db_sess.delete(playlist_track) for playlist_track in
+             db_sess.query(PlaylistTrack).filter(PlaylistTrack.playlist_id in playlists_ids).all()]
+            [db_sess.delete(track) for track in
+             db_sess.query(Dump).filter(Dump.track_id in track_ids).all()]
+            [db_sess.delete(like) for like in likes]
+            [db_sess.delete(playlist) for playlist in playlists]
+            [db_sess.delete(track) for track in tracks]
+            db_sess.delete(user)
+            db_sess.commit()
+            return redirect("/")
+
+    return render_template(
+        "account_delete.html",
+        form=form,
+        api_key=os.getenv('ADMIN_API_KEY'),
+    )
 
 
 @app.route('/playlists')
@@ -667,4 +763,6 @@ if __name__ == '__main__':
         os.mkdir("static/uploads/snds")
         os.mkdir("static/uploads/imgs")
 
-    app.run(host='127.0.0.1', port=5000)  # запуск сервера
+    # app.run(host='127.0.0.1', port=5000)  # запуск сервера
+    port = int(os.environ.get("PORT", 80))
+    serve(app, host='0.0.0.0', port=port)

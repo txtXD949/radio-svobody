@@ -35,7 +35,9 @@
                         </div>
                         <div class="track-info flex-grow-1">
                             <div class="track-title">{{ track.title }}</div>
-                            <div class="track-artist">{{ track.user.username }}</div>
+                            <a href="/profile/{{ track.user.id }}" style="text-decoration: none">
+                                <div class="track-artist">{{ track.user.username }}</div>
+                            </a>
                         </div>
                         <div class="item-likes">
                             <div class="heart-icon"></div>
@@ -58,7 +60,15 @@
                 {% for artist, total_likes in artists[:10] %}
                 <div class="top-item artist-item">
                     <div class="artist-card w-100">
-                        <div class="artist-avatar"></div>
+                        <a href="/profile/{{ artist.id }}" style="text-decoration: none">
+                            {% if artist.avatar %}
+                            <img src="/static/uploads/imgs/{{ artist.avatar }}"
+                                 style="width: 50px; height: 50px; border-radius: 50%;">
+                            {% else %}
+                            <span class="avatar"
+                                  style="width: 50px; height: 50px; font-size: 22px">{{ artist.username[0]|upper }}</span>
+                            {% endif %}
+                        </a>
                         <div class="artist-name">{{ artist.username }}</div>
                     </div>
                     <div class="item-likes">

@@ -3,6 +3,7 @@
 {% block main %}
 
 <div class="profile-container">
+    <!-- Статистика пользователя user_id (Лайки, прослушивания, выходы в топ) -->
     <div class="profile-container-statistics">
         <div class="item-likes" style="gap: 44px">
             <div class="heart-icon"></div>
@@ -25,12 +26,17 @@
         </div>
     </div>
 
+    <!-- Аватарка и имя пользователя user_id -->
     <div class="profile-container-statistics">
 
         <h1>{{ artist_name }}</h1>
 
+        {% if avatar_path %}
+        <img src="{{ avatar_path }}" style="width: 350px; height: 350px; border-radius: 50%;">
+        {% else %}
         <span class="avatar"
-              style="width: 350px; height: 350px; font-size: 128px">{{ current_user.username[0]|upper }}</span>
+              style="width: 350px; height: 350px; font-size: 128px">{{ artist_name[0]|upper }}</span>
+        {% endif %}
     </div>
 </div>
 
@@ -38,6 +44,7 @@
     <span class="top-label">ТРЕКИ</span>
 </div>
 
+<!-- Треки пользователя user_id -->
 <div class="top-box" style="min-height: 100%">
     <div class="top-box-content">
         <div class="top-row">
