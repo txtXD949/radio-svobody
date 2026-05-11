@@ -1,10 +1,8 @@
 #!/bin/bash
-
 cd rezistorka # Your app working directory
 export PORT=5000
 export PYTHONNOUSERSITE=1  # Отключает user site-packages
 export PIP_USER=false
-
 # Очищаем старую проблемную venv если есть
 if [ -d "venv" ]; then
     echo "Removing old venv with system packages conflict..."
@@ -29,4 +27,4 @@ if [ -f "requirements.txt" ]; then
 fi
 
 echo "Starting application..."
-python main.py
+python3 main.py
