@@ -6,6 +6,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
+from waitress import serve
 from dotenv import load_dotenv
 import os
 from random import choice
@@ -682,7 +683,6 @@ def account_delete():
             db_sess.commit()
             return redirect("/")
 
-
     return render_template(
         "account_delete.html",
         form=form,
@@ -763,4 +763,5 @@ if __name__ == '__main__':
         os.mkdir("static/uploads/snds")
         os.mkdir("static/uploads/imgs")
 
-    app.run(host='127.0.0.1', port=5000)  # запуск сервера
+    # app.run(host='127.0.0.1', port=5000)  # запуск сервера
+    serve(app, host='0.0.0.0', port=8080)
