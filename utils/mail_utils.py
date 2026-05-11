@@ -31,7 +31,7 @@ def send_conf_email(user_email, username):
 
     # HTML-тело письма
     html = f"""
-    <h2>Добро пожаловать в RadioSvobodi, {username}!</h2>
+    <h2>Добро пожаловать в rezistorka, {username}!</h2>
     <p>Для подтверждения email перейдите по ссылке:</p>
     <a href="{conf_url}">{conf_url}</a>
     <p>Ссылка действительна 1 час.</p>
