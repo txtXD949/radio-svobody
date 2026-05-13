@@ -34,7 +34,6 @@ from resources import (
 from utils.forms import LoginForm, RegisterForm, TrackForm, PlaylistForm, SettingsForm, SettingsTrackForm, \
     DeleteAccount
 from utils.mail_utils import send_conf_email, conf_token
-from utils.mail_init import mail
 from utils.scheduler import start_scheduler
 
 load_dotenv()
@@ -60,17 +59,6 @@ api.add_resource(PlaylistListResource, '/api/playlists')
 api.add_resource(PlaylistResource, '/api/playlists/<int:playlist_id>')
 api.add_resource(PlaylistTracksResource, '/api/playlists/<int:playlist_id>/tracks')
 api.add_resource(PlaylistTrackResource, '/api/playlists/<int:playlist_id>/tracks/<int:track_id>')
-
-# почта
-app.config['MAIL_SERVER'] = 'smtp.yandex.ru'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USERNAME'] = 'rezistorka@ya.ru'
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = 'rezistorka@ya.ru'
-
-mail.init_app(app)
 
 # вход
 login_manager = LoginManager()
@@ -158,6 +146,28 @@ def register():
                     title='Регистрация'
                 )
 
+            # проверка уникальности username
+            if db_sess.query(User).filter(User.username == form.username.data).first():
+                return render_template(
+                    'register.html',
+                    message='Этот ник уже занят',
+                    form=form,
+                    title='Регистрация'
+                )
+
+            # проверка на доставленное письмо
+            try:
+                # отправка письма с подтверждением (используем сохранённые данные)
+                send_conf_email(form.email.data, form.username.data)
+            except Exception as e:
+                # письмо не отправилось — не создаём пользователя
+                return render_template(
+                    'register.html',
+                    message='Ошибка отправки письма. Попробуйте позже.',
+                    form=form,
+                    title='Регистрация'
+                )
+
             # создание пользователя
             user = User()
             user.username = form.username.data
@@ -169,11 +179,6 @@ def register():
 
             # сохраняем id и данные до закрытия сессии
             user_id = user.id
-            user_email = user.email
-            user_username = user.username
-
-        # отправка письма с подтверждением (используем сохранённые данные)
-        send_conf_email(user_email, user_username)
 
         # загружаем пользователя заново через user_loader
         login_user(load_user(user_id))  # авторизация
