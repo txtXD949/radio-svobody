@@ -1,7 +1,8 @@
+import os
+import requests
+
 from itsdangerous import URLSafeTimedSerializer
 from flask import current_app
-from flask_mail import Message
-from utils.mail_init import mail
 
 
 def generate_conf_token(email):
@@ -26,8 +27,13 @@ def conf_token(token, expiration=3600):
 
 def send_conf_email(user_email, username):
     """Отправляет письмо со ссылкой для подтверждения email"""
-    token = generate_conf_token(user_email)
-    conf_url = f'http://rezistorka.ru/confirm/{token}'
+    token = generate_conf_token(user_email)  # генерация токена
+    conf_url = f'http://rezistorka.ru/confirm/{token}'  # генерация ссылок
+
+    api_key = os.getenv('UNISENDER_API_KEY')  # API ключ
+    from_email = os.getenv('UNISENDER_FROM_EMAIL')  # адрес отправителя
+    from_name = 'rezistorka'  # имя отправителя
+    subject = 'Подтверждение почты'
 
     # HTML-тело письма
     html = f"""
@@ -36,9 +42,33 @@ def send_conf_email(user_email, username):
     <a href="{conf_url}">{conf_url}</a>
     <p>Ссылка действительна 1 час.</p>
     """
-    msg = Message(
-        'Подтверждение email',  # Тема письма
-        recipients=[user_email],       # Кому отправляем
-        html=html                      # Содержимое
-    )
-    mail.send(msg)  # Отправка через настроенный SMTP
+
+    url = 'https://goapi.unisender.ru/ru/transactional/api/v1'  # эндпоинт API Unisender для отправки email
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-API-KEY': api_key
+    }
+
+    params = {
+        'message': {
+            'recipients': [
+                {
+                    'email': user_email  # почта получателя
+                }
+            ],
+            'body': {
+                'html': html  # HTML-тело письма
+            },
+            'subject': subject,  # тема письма
+            'from_email': from_email,  # отправитель (наша почта на домен)
+            'from_name': from_name,  # имя (наш сайт)
+            'track_links': 1,  # следить за ссылками
+            'track_read': 1  # следить за прочтением
+        }
+    }
+
+    response = requests.post(url + '/email/send.json', json=params,
+                             headers=headers)  # отправка POST-запроса к API Unisender Go
+    return response.json()
