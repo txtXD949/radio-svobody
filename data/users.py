@@ -17,7 +17,7 @@ class User(SqlAlchemyBase, SerializerMixin, UserMixin):
     avatar = sqlalchemy.Column(sqlalchemy.String)
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now())
 
-    confirmed = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    confirmed = sqlalchemy.Column(sqlalchemy.Boolean, default=True)
 
     def set_password(self, password):
         self.password = generate_password_hash(password)

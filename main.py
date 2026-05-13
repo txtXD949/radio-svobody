@@ -155,23 +155,25 @@ def register():
                     title='Регистрация'
                 )
 
+            # ВАЖНО! было принято решение убрать подтверждение почты в связи с финансовыми неудобствами долгой проверкой DNS серверов.
             # проверка на доставленное письмо
-            try:
-                # отправка письма с подтверждением (используем сохранённые данные)
-                send_conf_email(form.email.data, form.username.data)
-            except Exception as e:
-                # письмо не отправилось — не создаём пользователя
-                return render_template(
-                    'register.html',
-                    message='Ошибка отправки письма. Попробуйте позже.',
-                    form=form,
-                    title='Регистрация'
-                )
+            # try:
+            #     # отправка письма с подтверждением (используем сохранённые данные)
+            #     send_conf_email(form.email.data, form.username.data)
+            # except Exception as e:
+            #     # письмо не отправилось — не создаём пользователя
+            #     return render_template(
+            #         'register.html',
+            #         message='Ошибка отправки письма. Попробуйте позже.',
+            #         form=form,
+            #         title='Регистрация'
+            #     )
 
             # создание пользователя
             user = User()
             user.username = form.username.data
             user.email = form.email.data
+            user.confirmed = True
             user.set_password(form.password.data)
 
             db_sess.add(user)
@@ -182,7 +184,8 @@ def register():
 
         # загружаем пользователя заново через user_loader
         login_user(load_user(user_id))  # авторизация
-        return redirect('/confirm_wait')
+        # return redirect('/confirm_wait')
+        return redirect('/')
     return render_template('register.html', form=form, title='Регистрация')
 
 

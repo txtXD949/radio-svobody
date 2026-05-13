@@ -25,10 +25,10 @@ def conf_token(token, expiration=3600):
     return email
 
 
-def send_conf_email(user_email, username):  # TODO: сделать нормальную рассылку
+def send_conf_email(user_email, username):
     """Отправляет письмо со ссылкой для подтверждения email"""
     token = generate_conf_token(user_email)  # генерация токена
-    conf_url = f'http://rezistorka.ru/confirm/{token}'  # генерация ссылок
+    conf_url = f'http://rezistorka.ru/confirm/{token}'  # генерация ссылок  # для проверки rezistorka.ru замените на 127.0.0.1:80 или 127.0.0.1:5000
 
     api_key = os.getenv('UNISENDER_API_KEY')  # API ключ
     from_email = os.getenv('UNISENDER_FROM_EMAIL')  # адрес отправителя
@@ -71,4 +71,5 @@ def send_conf_email(user_email, username):  # TODO: сделать нормал�
 
     response = requests.post(url + '/email/send.json', json=params,
                              headers=headers)  # отправка POST-запроса к API Unisender Go
+    print(response.status_code, response.json())
     return response.json()
