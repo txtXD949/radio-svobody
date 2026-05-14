@@ -1,5 +1,8 @@
 <h1 style="color: #484AD5; text-align: center;">REZISTORKA</h1>
 
+> [!TIP]
+> http://rezistorka.ru
+
 ----
 
 ## Содержание
